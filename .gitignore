@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.vercel/
+.netlify/
+*.log
+.DS_Store
+# personal reference photos never go in the repo
+*.heic
+*.HEIC
+dev-assets/

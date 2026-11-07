@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Tangram Cube Extreme · 3D simulator</title>
+    <meta
+      name="description"
+      content="Interactive 3D simulator of the DaYan Tangram Cube Extreme: real cut geometry, 60° corner turns, edge flips and shape-shifting."
+    />
+    <meta name="theme-color" content="#6570c3" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="app">
+      <main class="stage" id="stage" aria-label="3D puzzle. Click a piece to turn its highlighted part.">
+        <div class="stage__tip" id="tip" hidden></div>
+      </main>
+      <aside class="panel" id="panel"></aside>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

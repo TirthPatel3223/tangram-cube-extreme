@@ -1,0 +1,693 @@
+/*
+ * Glass theme: a plain periwinkle backdrop (no imagery), frosted translucent cards, white pill
+ * selections with violet text, translucent rounded fields. Colours sampled from the design reference.
+ */
+:root {
+  --bg-top: #6570c3;
+  --bg-bottom: #7180d2;
+  --glass: rgba(255, 255, 255, 0.13);
+  --glass-hover: rgba(255, 255, 255, 0.21);
+  --glass-press: rgba(255, 255, 255, 0.3);
+  --glass-focus: rgba(255, 255, 255, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.34);
+  --glass-border-strong: rgba(255, 255, 255, 0.78);
+  --ink: #ffffff;
+  --ink-soft: rgba(255, 255, 255, 0.9);
+  --ink-muted: rgba(255, 255, 255, 0.76);
+  --accent: #7650c4;
+  --pill: #f6f3fc;
+  --danger: #ffe0e8;
+  --shadow-card: 0 18px 44px rgba(36, 40, 118, 0.18);
+  --shadow-pill: 0 8px 22px rgba(44, 32, 120, 0.22);
+  --radius-card: 20px;
+  --radius-field: 12px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: dark;
+  font-family:
+    'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  /* A blank backdrop: just a soft periwinkle wash. */
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%) fixed;
+  background-color: var(--bg-top);
+}
+
+#app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 390px);
+  height: 100vh;
+  height: 100dvh;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+svg {
+  flex: none;
+}
+
+/* ---------- stage (the 3D puzzle) ---------- */
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+  /* All touch gestures over the puzzle rotate/zoom it instead of scrolling or zooming the page. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.stage.is-dragging,
+.stage.is-dragging .stage-canvas {
+  cursor: grabbing !important;
+}
+
+.stage-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.stage-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stage__tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  pointer-events: none;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--pill);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  box-shadow: var(--shadow-pill);
+}
+
+.part-label {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(246, 243, 252, 0.92);
+  color: var(--accent);
+  font: 750 12px/1 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(36, 40, 118, 0.25);
+  user-select: none;
+  transition:
+    opacity 0.2s,
+    box-shadow 0.15s;
+}
+
+.part-label--corner {
+  background: var(--accent);
+  color: #fff;
+}
+
+.part-label.is-active {
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.55),
+    0 4px 12px rgba(36, 40, 118, 0.3);
+}
+
+.part-label.is-behind {
+  opacity: 0.35;
+}
+
+/* ---------- side panel ---------- */
+
+.panel {
+  min-width: 0; /* never let panel content widen the page */
+  container: panel / inline-size;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 26px 22px 30px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+.panel__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px 4px 10px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.eyebrow--brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.08em;
+}
+
+.brand__title {
+  margin: 8px 0 0;
+  font-size: 36px;
+  font-weight: 650;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+
+.brand__meta {
+  margin: 4px 0 12px;
+  color: var(--ink-muted);
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+
+.card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 18px 18px 20px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.card--compact {
+  padding: 14px 16px 16px;
+}
+
+.card > .eyebrow {
+  margin-bottom: 14px;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--ink-soft);
+}
+
+.move-group + .move-group {
+  margin-top: 16px;
+}
+
+.tag {
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+/* Move buttons look like the reference's glass input fields. */
+.mv {
+  flex: 1 1 0;
+  min-width: 54px;
+  height: 54px;
+  padding: 0 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-field);
+  background: var(--glass);
+  color: var(--ink);
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.06s;
+}
+
+.mv:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+}
+
+.mv:active {
+  background: var(--glass-press);
+  transform: scale(0.97);
+}
+
+.hint {
+  margin: 16px 0 0;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.75em;
+  padding: 1px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  font: 650 11px/1.5 var(--mono);
+  text-align: center;
+  color: var(--ink);
+}
+
+/* ---------- buttons ---------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* Narrow panel: a full-width Scramble pill, then Reset / Undo / Redo on their own row. */
+@container panel (max-width: 344px) {
+  .actions .btn--primary {
+    flex: 1 1 100%;
+  }
+
+  .actions .btn--ghost:not(.btn--icon) {
+    flex: 1 1 auto;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.06s,
+    opacity 0.15s;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+/* The reference's "Continue": a white pill with violet text. */
+.btn--primary,
+.btn--pill {
+  background: var(--pill);
+  border-color: transparent;
+  color: var(--accent);
+  box-shadow: var(--shadow-pill);
+}
+
+.btn--primary {
+  height: 48px;
+  padding: 0 20px;
+  font-size: 16px;
+}
+
+.btn--primary:hover:not(:disabled),
+.btn--pill:hover:not(:disabled) {
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.18),
+    var(--shadow-pill);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.btn--icon {
+  width: 44px;
+  padding: 0;
+}
+
+/* ---------- fields ---------- */
+
+.scramble__text {
+  display: block;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-field);
+  background: rgba(255, 255, 255, 0.1);
+  font: 600 13.5px/1.75 var(--mono);
+  word-spacing: 0.2em;
+  color: var(--ink);
+  user-select: all;
+}
+
+.alg {
+  display: flex;
+  gap: 9px;
+}
+
+.alg__input {
+  flex: 1;
+  min-width: 0;
+  height: 54px;
+  padding: 0 15px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-field);
+  background: var(--glass);
+  color: var(--ink);
+  font: 650 19px/1 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.alg__input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.alg__input:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+/* Focused field glows like the reference's active "Home price" box. */
+.alg__input:focus {
+  outline: none;
+  background: var(--glass-focus);
+  border-color: var(--glass-border-strong);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.14),
+    0 10px 26px rgba(36, 40, 118, 0.2);
+}
+
+.alg__input.is-invalid {
+  border-color: #ffc4d3;
+  box-shadow: 0 0 0 4px rgba(255, 140, 170, 0.2);
+}
+
+.alg .btn--pill {
+  height: 54px;
+  padding: 0 20px;
+  border-radius: var(--radius-field);
+}
+
+.alg__error {
+  margin: 10px 2px 0;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.count {
+  min-width: 30px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--pill);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+.chip {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  font: 650 13px/1.4 var(--mono);
+}
+
+.chip--redo {
+  opacity: 0.5;
+  background: transparent;
+  border-style: dashed;
+}
+
+.history__empty {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 13.5px;
+}
+
+/* ---------- segmented selections ("Monthly payment | Affordability" pills) ---------- */
+
+.seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.seg button {
+  height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+
+.seg button:not(.is-on):hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.seg button.is-on {
+  background: var(--pill);
+  color: var(--accent);
+  box-shadow: var(--shadow-pill);
+}
+
+/* ---------- switch and slider ---------- */
+
+.switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 16px;
+  font-size: 14.5px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.switch__track {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  transition:
+    background-color 0.18s,
+    border-color 0.18s;
+}
+
+.switch__track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(36, 40, 118, 0.3);
+  transition:
+    transform 0.18s,
+    background-color 0.18s;
+}
+
+.switch input:checked + .switch__track {
+  background: var(--pill);
+  border-color: transparent;
+}
+
+.switch input:checked + .switch__track::after {
+  transform: translateX(18px);
+  background: var(--accent);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 14.5px;
+  font-weight: 550;
+}
+
+.range input {
+  flex: 1;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.range input::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.range input::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.range input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7.5px;
+  border-radius: 50%;
+  background: var(--pill);
+  box-shadow: 0 3px 10px rgba(36, 40, 118, 0.35);
+}
+
+.range input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pill);
+  box-shadow: 0 3px 10px rgba(36, 40, 118, 0.35);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.alg__input:focus-visible {
+  outline: none;
+}
+
+.about {
+  margin: 4px 4px 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---------- narrow screens: puzzle on top, controls below ---------- */
+
+@media (max-width: 860px) {
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 62svh auto;
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .panel {
+    overflow: visible;
+    padding: 18px 16px 30px;
+  }
+
+  .brand__title {
+    font-size: 30px;
+  }
+}
