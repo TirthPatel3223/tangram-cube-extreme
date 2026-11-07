@@ -136,7 +136,7 @@ svg {
   top: 50%;
   width: min(78%, 78vh);
   aspect-ratio: 1;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--zoom, 1));
   border-radius: 50%;
   background: radial-gradient(circle, var(--halo) 0%, var(--halo) 38%, transparent 70%);
   filter: blur(26px);

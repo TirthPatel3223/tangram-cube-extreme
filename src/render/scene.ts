@@ -127,6 +127,8 @@ export function createStage(container: HTMLElement): Stage {
   const placeCamera = () => {
     camera.position.set(0, 0, distance);
     camera.lookAt(0, 0, 0);
+    // The CSS halo behind the puzzle scales with the puzzle's apparent size.
+    container.style.setProperty('--zoom', String(DEFAULT_DISTANCE / distance));
   };
   placeCamera();
 
