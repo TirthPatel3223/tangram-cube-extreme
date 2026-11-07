@@ -1,24 +1,38 @@
 /*
- * Glass theme: a plain periwinkle backdrop (no imagery), frosted translucent cards, white pill
- * selections with violet text, translucent rounded fields. Colours sampled from the design reference.
+ * Theme tokens sampled from tirthpatel.org: a slate-navy dark theme (default) and a soft white light theme,
+ * with a blue accent and translucent "glass" surfaces. The theme is the `data-theme` attribute on <html>.
  */
-:root {
-  --bg-top: #6570c3;
-  --bg-bottom: #7180d2;
-  --glass: rgba(255, 255, 255, 0.13);
-  --glass-hover: rgba(255, 255, 255, 0.21);
-  --glass-press: rgba(255, 255, 255, 0.3);
-  --glass-focus: rgba(255, 255, 255, 0.3);
-  --glass-border: rgba(255, 255, 255, 0.34);
-  --glass-border-strong: rgba(255, 255, 255, 0.78);
-  --ink: #ffffff;
-  --ink-soft: rgba(255, 255, 255, 0.9);
-  --ink-muted: rgba(255, 255, 255, 0.76);
-  --accent: #7650c4;
-  --pill: #f6f3fc;
-  --danger: #ffe0e8;
-  --shadow-card: 0 18px 44px rgba(36, 40, 118, 0.18);
-  --shadow-pill: 0 8px 22px rgba(44, 32, 120, 0.22);
+:root,
+:root[data-theme='dark'] {
+  --bg: #0f1419;
+  --glass: rgba(15, 20, 26, 0.72);
+  --glass-hover: rgba(148, 163, 184, 0.14);
+  --glass-press: rgba(148, 163, 184, 0.22);
+  --glass-focus: rgba(96, 165, 250, 0.12);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-border-strong: #60a5fa;
+  --fill-subtle: rgba(148, 163, 184, 0.08);
+  --fill: rgba(148, 163, 184, 0.14);
+  --line: rgba(148, 163, 184, 0.2);
+  --line-strong: rgba(148, 163, 184, 0.4);
+  --ring: rgba(96, 165, 250, 0.2);
+  --scroll: rgba(148, 163, 184, 0.35);
+  --placeholder: rgba(148, 163, 184, 0.6);
+  --halo: rgba(255, 255, 255, 0.16);
+  --ink: #e2e8f0;
+  --ink-soft: #cbd5e1;
+  --ink-muted: #94a3b8;
+  --title: #f1f5f9;
+  --accent: #60a5fa;
+  --accent-hover: #93c5fd;
+  --pill: #60a5fa;
+  --pill-hover: #93c5fd;
+  --pill-ink: #0f1419;
+  --label-bg: rgba(30, 41, 59, 0.94);
+  --danger: #fda4af;
+  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  --shadow-pill: 0 8px 22px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
   --radius-card: 20px;
   --radius-field: 12px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -28,6 +42,39 @@
     sans-serif;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme='light'] {
+  --bg: #f8f9fc;
+  --glass: rgba(255, 255, 255, 0.78);
+  --glass-hover: rgba(37, 99, 235, 0.07);
+  --glass-press: rgba(37, 99, 235, 0.14);
+  --glass-focus: rgba(37, 99, 235, 0.06);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-border-strong: #2563eb;
+  --fill-subtle: rgba(15, 23, 42, 0.04);
+  --fill: rgba(15, 23, 42, 0.07);
+  --line: rgba(15, 23, 42, 0.12);
+  --line-strong: rgba(15, 23, 42, 0.28);
+  --ring: rgba(37, 99, 235, 0.18);
+  --scroll: rgba(15, 23, 42, 0.25);
+  --placeholder: rgba(74, 85, 104, 0.6);
+  --halo: rgba(100, 116, 139, 0.3);
+  --ink: #4a5568;
+  --ink-soft: #4a5568;
+  --ink-muted: #718096;
+  --title: #1a202c;
+  --accent: #2563eb;
+  --accent-hover: #3b82f6;
+  --pill: #2563eb;
+  --pill-hover: #3b82f6;
+  --pill-ink: #ffffff;
+  --label-bg: rgba(255, 255, 255, 0.95);
+  --danger: #be123c;
+  --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  --shadow-pill: 0 8px 20px rgba(37, 99, 235, 0.25);
+  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.18);
+  color-scheme: light;
 }
 
 *,
@@ -47,9 +94,9 @@ body {
 }
 
 body {
-  /* A blank backdrop: just a soft periwinkle wash. */
-  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%) fixed;
-  background-color: var(--bg-top);
+  /* A plain backdrop; the colour comes from the theme. */
+  background: var(--bg);
+  transition: background-color 0.3s;
 }
 
 #app {
@@ -81,6 +128,21 @@ svg {
   cursor: grab;
 }
 
+.stage::before {
+  /* A soft halo behind the puzzle that lifts it off the background. */
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(78%, 78vh);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--halo) 0%, var(--halo) 38%, transparent 70%);
+  filter: blur(26px);
+  pointer-events: none;
+}
+
 .stage.is-dragging,
 .stage.is-dragging .stage-canvas {
   cursor: grabbing !important;
@@ -110,7 +172,7 @@ svg {
   padding: 7px 13px;
   border-radius: 999px;
   background: var(--pill);
-  color: var(--accent);
+  color: var(--pill-ink);
   font-size: 13px;
   font-weight: 650;
   white-space: nowrap;
@@ -120,11 +182,11 @@ svg {
 .part-label {
   padding: 5px 9px;
   border-radius: 999px;
-  background: rgba(246, 243, 252, 0.92);
+  background: var(--label-bg);
   color: var(--accent);
   font: 750 12px/1 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0.02em;
-  box-shadow: 0 4px 12px rgba(36, 40, 118, 0.25);
+  box-shadow: var(--shadow-sm);
   user-select: none;
   transition:
     opacity 0.2s,
@@ -133,13 +195,13 @@ svg {
 
 .part-label--corner {
   background: var(--accent);
-  color: #fff;
+  color: var(--pill-ink);
 }
 
 .part-label.is-active {
   box-shadow:
-    0 0 0 4px rgba(255, 255, 255, 0.55),
-    0 4px 12px rgba(36, 40, 118, 0.3);
+    0 0 0 3px var(--accent),
+    var(--shadow-sm);
 }
 
 .part-label.is-behind {
@@ -158,7 +220,7 @@ svg {
   flex-direction: column;
   gap: 14px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  scrollbar-color: var(--scroll) transparent;
 }
 
 .panel__header {
@@ -187,6 +249,7 @@ svg {
 
 .brand__title {
   margin: 8px 0 0;
+  color: var(--title);
   font-size: 36px;
   font-weight: 650;
   line-height: 1.04;
@@ -243,8 +306,8 @@ svg {
   font-size: 11.5px;
   font-weight: 650;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--fill);
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 2px 9px;
 }
@@ -278,8 +341,8 @@ svg {
 
 .mv:hover {
   background: var(--glass-hover);
-  border-color: rgba(255, 255, 255, 0.62);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 4px var(--ring);
 }
 
 .mv:active {
@@ -298,9 +361,9 @@ kbd {
   display: inline-block;
   min-width: 1.75em;
   padding: 1px 5px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--fill);
   font: 650 11px/1.5 var(--mono);
   text-align: center;
   color: var(--ink);
@@ -334,7 +397,7 @@ kbd {
   gap: 7px;
   height: 44px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: transparent;
   color: var(--ink);
@@ -359,12 +422,12 @@ kbd {
   cursor: default;
 }
 
-/* The reference's "Continue": a white pill with violet text. */
+/* The reference's "Continue": a solid accent pill. */
 .btn--primary,
 .btn--pill {
   background: var(--pill);
   border-color: transparent;
-  color: var(--accent);
+  color: var(--pill-ink);
   box-shadow: var(--shadow-pill);
 }
 
@@ -376,15 +439,15 @@ kbd {
 
 .btn--primary:hover:not(:disabled),
 .btn--pill:hover:not(:disabled) {
-  background: #ffffff;
+  background: var(--pill-hover);
   box-shadow:
-    0 0 0 4px rgba(255, 255, 255, 0.18),
+    0 0 0 4px var(--ring),
     var(--shadow-pill);
 }
 
 .btn--ghost:hover:not(:disabled) {
   background: var(--glass-hover);
-  border-color: rgba(255, 255, 255, 0.7);
+  border-color: var(--line-strong);
 }
 
 .btn--icon {
@@ -397,9 +460,9 @@ kbd {
 .scramble__text {
   display: block;
   padding: 11px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid var(--line);
   border-radius: var(--radius-field);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--fill-subtle);
   font: 600 13.5px/1.75 var(--mono);
   word-spacing: 0.2em;
   color: var(--ink);
@@ -429,12 +492,12 @@ kbd {
 }
 
 .alg__input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--placeholder);
   font-weight: 500;
 }
 
 .alg__input:hover {
-  border-color: rgba(255, 255, 255, 0.55);
+  border-color: var(--line-strong);
 }
 
 /* Focused field glows like the reference's active "Home price" box. */
@@ -443,13 +506,13 @@ kbd {
   background: var(--glass-focus);
   border-color: var(--glass-border-strong);
   box-shadow:
-    0 0 0 4px rgba(255, 255, 255, 0.14),
-    0 10px 26px rgba(36, 40, 118, 0.2);
+    0 0 0 4px var(--ring),
+    0 10px 26px rgba(0, 0, 0, 0.18);
 }
 
 .alg__input.is-invalid {
-  border-color: #ffc4d3;
-  box-shadow: 0 0 0 4px rgba(255, 140, 170, 0.2);
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.2);
 }
 
 .alg .btn--pill {
@@ -470,7 +533,8 @@ kbd {
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--pill);
-  color: var(--accent);
+  color: var(--pill-ink);
+  background: var(--pill);
   font-size: 13px;
   font-weight: 700;
   text-align: center;
@@ -483,14 +547,14 @@ kbd {
   max-height: 150px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  scrollbar-color: var(--scroll) transparent;
 }
 
 .chip {
   padding: 4px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--fill);
   font: 650 13px/1.4 var(--mono);
 }
 
@@ -512,9 +576,9 @@ kbd {
   display: inline-flex;
   gap: 4px;
   padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--fill-subtle);
 }
 
 .seg button {
@@ -534,12 +598,12 @@ kbd {
 }
 
 .seg button:not(.is-on):hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--glass-hover);
 }
 
 .seg button.is-on {
   background: var(--pill);
-  color: var(--accent);
+  color: var(--pill-ink);
   box-shadow: var(--shadow-pill);
 }
 
@@ -567,9 +631,9 @@ kbd {
   position: relative;
   width: 42px;
   height: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--fill);
   transition:
     background-color 0.18s,
     border-color 0.18s;
@@ -583,8 +647,8 @@ kbd {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(36, 40, 118, 0.3);
+  background: var(--ink-muted);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition:
     transform 0.18s,
     background-color 0.18s;
@@ -597,11 +661,11 @@ kbd {
 
 .switch input:checked + .switch__track::after {
   transform: translateX(18px);
-  background: var(--accent);
+  background: var(--pill-ink);
 }
 
 .switch input:focus-visible + .switch__track {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -627,13 +691,13 @@ kbd {
 .range input::-webkit-slider-runnable-track {
   height: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--line);
 }
 
 .range input::-moz-range-track {
   height: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--line);
 }
 
 .range input::-webkit-slider-thumb {
@@ -643,7 +707,7 @@ kbd {
   margin-top: -7.5px;
   border-radius: 50%;
   background: var(--pill);
-  box-shadow: 0 3px 10px rgba(36, 40, 118, 0.35);
+  box-shadow: var(--shadow-sm);
 }
 
 .range input::-moz-range-thumb {
@@ -652,12 +716,12 @@ kbd {
   border: 0;
   border-radius: 50%;
   background: var(--pill);
-  box-shadow: 0 3px 10px rgba(36, 40, 118, 0.35);
+  box-shadow: var(--shadow-sm);
 }
 
 button:focus-visible,
 input:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -690,4 +754,48 @@ input:focus-visible {
   .brand__title {
     font-size: 30px;
   }
+}
+
+/* ---------- theme toggle ---------- */
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--accent);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.06s;
+}
+
+.theme-toggle:hover {
+  background: var(--glass-hover);
+  border-color: var(--line-strong);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle .icon-sun,
+:root[data-theme='light'] .theme-toggle .icon-moon {
+  display: none;
+}
+
+:root[data-theme='light'] .theme-toggle .icon-sun {
+  display: block;
 }

@@ -15,6 +15,26 @@ import { type ViewName, createStage } from './render/scene';
 import { bindKeyboard } from './ui/keyboard';
 import { createPanel } from './ui/panel';
 
+// Light / dark theme: the initial value is set by the inline script in index.html.
+const themeBtn = document.getElementById('theme-toggle')!;
+const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+function applyTheme(t: 'light' | 'dark', save: boolean) {
+  document.documentElement.dataset.theme = t;
+  themeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  themeMeta?.setAttribute('content', t === 'dark' ? '#0f1419' : '#f8f9fc');
+  if (save) {
+    try {
+      localStorage.setItem('theme', t);
+    } catch {
+      /* private mode: just don't remember it */
+    }
+  }
+}
+applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark', false);
+themeBtn.addEventListener('click', () =>
+  applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light', true),
+);
+
 const stageEl = document.getElementById('stage')!;
 const panelEl = document.getElementById('panel')!;
 const tipEl = document.getElementById('tip')!;

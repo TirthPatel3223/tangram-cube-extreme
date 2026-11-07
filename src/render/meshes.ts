@@ -181,7 +181,7 @@ export function disposeVisuals(visuals: readonly PieceVisual[]): void {
   }
 }
 
-const HIGHLIGHT_BODY = new THREE.Color('#9b7bff');
+const HIGHLIGHT_BODY = new THREE.Color('#60a5fa');
 const BLACK = new THREE.Color(0x000000);
 
 export function setHighlighted(v: PieceVisual, on: boolean): void {
