@@ -1,28 +1,31 @@
-import { type Move, invertMove } from './moves';
+/**
+ * Undo/redo stack of moves made since the last scramble or reset. Generic over the move type so
+ * every puzzle can use it; `invert` turns a recorded move into the move that undoes it.
+ */
+export class MoveHistory<M> {
+  private done: M[] = [];
+  private undone: M[] = [];
 
-/** Undo/redo stack of moves made since the last scramble or reset. */
-export class MoveHistory {
-  private done: Move[] = [];
-  private undone: Move[] = [];
+  constructor(private readonly invert: (m: M) => M) {}
 
   /** Record a new move (drops anything that could have been redone). */
-  push(move: Move): void {
+  push(move: M): void {
     this.done.push(move);
     this.undone = [];
   }
 
   /** Returns the move that undoes the last move, or null. */
-  undo(): Move | null {
+  undo(): M | null {
     const m = this.done.pop();
-    if (!m) return null;
+    if (m === undefined) return null;
     this.undone.push(m);
-    return invertMove(m);
+    return this.invert(m);
   }
 
   /** Returns the move to redo, or null. */
-  redo(): Move | null {
+  redo(): M | null {
     const m = this.undone.pop();
-    if (!m) return null;
+    if (m === undefined) return null;
     this.done.push(m);
     return m;
   }
@@ -32,12 +35,12 @@ export class MoveHistory {
     this.undone = [];
   }
 
-  get moves(): readonly Move[] {
+  get moves(): readonly M[] {
     return this.done;
   }
 
   /** Moves that redo would re-apply, in the order they would be applied. */
-  get redoable(): readonly Move[] {
+  get redoable(): readonly M[] {
     return this.undone.slice().reverse();
   }
 

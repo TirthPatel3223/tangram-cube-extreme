@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { CUT_S } from '../src/config';
 import { MoveHistory } from '../src/puzzle/history';
 import { createModel } from '../src/puzzle/model';
-import { formatSequence, parseAlgorithm } from '../src/puzzle/moves';
+import { formatSequence, invertMove, parseAlgorithm } from '../src/puzzle/moves';
 import { PuzzleState } from '../src/puzzle/state';
 import { VARIANTS } from '../src/puzzle/variants';
 
 describe('undo / redo', () => {
   it('undoes and redoes moves in order', () => {
-    const h = new MoveHistory();
+    const h = new MoveHistory(invertMove);
     const r = parseAlgorithm("U F U2' R", VARIANTS.extreme);
     if (!r.ok) throw new Error(r.error);
     r.moves.forEach((m) => h.push(m));
@@ -24,7 +24,7 @@ describe('undo / redo', () => {
   it('undoing everything returns the puzzle to solved', () => {
     const model = createModel('extreme', CUT_S);
     const st = PuzzleState.solved(model);
-    const h = new MoveHistory();
+    const h = new MoveHistory(invertMove);
     const r = parseAlgorithm("U F D3 R U2' L D F", VARIANTS.extreme);
     if (!r.ok) throw new Error(r.error);
     for (const m of r.moves) {

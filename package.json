@@ -2,7 +2,7 @@
   "name": "tangram-cube-extreme",
   "private": true,
   "version": "0.1.0",
-  "description": "Interactive 3D simulator of the DaYan Tangram Cube Extreme (and the original Tangram Cube): exact cut geometry, 60-degree corner turns, edge flips and shape-shifting.",
+  "description": "Interactive 3D twisty-puzzle simulators: the DaYan Tangram Cube Extreme (and original), and Meffert's Curvy Copter and Curvy Copter Plus with curved cuts, jumbling and real bandaging.",
   "type": "module",
   "engines": {
     "node": ">=20.19"
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
+    "manifold-3d": "^3.5.4",
     "three": "^0.187.0"
   },
   "devDependencies": {

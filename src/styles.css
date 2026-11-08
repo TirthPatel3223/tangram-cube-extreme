@@ -223,6 +223,51 @@ svg {
   scrollbar-color: var(--scroll) transparent;
 }
 
+/* Puzzle tabs: one link per puzzle, styled like the segmented pills. */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--fill-subtle);
+}
+
+.tabs__tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+
+.tabs__tab:not([aria-current='page']):hover {
+  background: var(--glass-hover);
+}
+
+.tabs__tab[aria-current='page'] {
+  background: var(--pill);
+  color: var(--pill-ink);
+  box-shadow: var(--shadow-pill);
+}
+
+.tabs__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .panel__header {
   display: flex;
   flex-direction: column;
@@ -355,6 +400,99 @@ svg {
   color: var(--ink-muted);
   font-size: 12.5px;
   line-height: 1.6;
+}
+
+.hint--tight {
+  margin-top: 10px;
+}
+
+.hint code {
+  font: 650 12px/1 var(--mono);
+  color: var(--ink);
+}
+
+/* ---------- Curvy Copter: 12 edge buttons in three rows ---------- */
+
+.eyebrow--flush {
+  margin: 0;
+}
+
+.seg--sm button {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13.5px;
+}
+
+.mode-note {
+  margin: 0 0 12px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.edge-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.edge-row {
+  display: grid;
+  grid-template-columns: 54px repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px;
+}
+
+.edge-row__label {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mv--edge {
+  min-width: 0;
+  height: 46px;
+  padding: 0 4px;
+  font-size: 17px;
+}
+
+.mv.is-blocked {
+  border-color: var(--danger);
+  color: var(--danger);
+  opacity: 0.72;
+}
+
+.status {
+  margin: 14px 0 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field);
+  background: var(--fill-subtle);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.status.is-good {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.status.is-alert {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.stage__tip.is-blocked {
+  background: #f43f5e;
+  color: #fff;
+}
+
+.part-label.is-blocked {
+  box-shadow:
+    0 0 0 3px #f43f5e,
+    var(--shadow-sm);
 }
 
 kbd {

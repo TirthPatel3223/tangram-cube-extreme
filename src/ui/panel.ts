@@ -1,6 +1,7 @@
 import { type Axis, type Move, formatMove } from '../puzzle/moves';
 import type { VariantDef, VariantId } from '../puzzle/variants';
 import type { ViewName } from '../render/scene';
+import { puzzleTabsHtml } from './puzzleTabs';
 
 export interface PanelHandlers {
   onVariant(id: VariantId): void;
@@ -44,6 +45,7 @@ const ICON = {
 };
 
 const TEMPLATE = /* html */ `
+  ${puzzleTabsHtml('tangram')}
   <header class="panel__header">
     <p class="eyebrow eyebrow--brand">${ICON.cube}<span>DaYan · design by Daqing Bao</span></p>
     <h1 class="brand__title" data-ref="title">Tangram Cube Extreme</h1>

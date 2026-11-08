@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CUT_S } from '../src/config';
 import { MoveHistory } from '../src/puzzle/history';
 import { createModel } from '../src/puzzle/model';
-import { generateScramble, mulberry32, parseAlgorithm } from '../src/puzzle/moves';
+import { generateScramble, invertMove, mulberry32, parseAlgorithm } from '../src/puzzle/moves';
 import { PuzzleState } from '../src/puzzle/state';
 import { VARIANTS } from '../src/puzzle/variants';
 import { Animator } from '../src/render/animator';
@@ -36,7 +36,7 @@ describe('animator + history (as wired in the app)', () => {
     const root = new THREE.Group();
     const visuals = fakeVisuals(model.pieces.length);
     const animator = new Animator(root, visuals, PuzzleState.solved(model));
-    const history = new MoveHistory();
+    const history = new MoveHistory(invertMove);
     const turn = (alg: string) => {
       const r = parseAlgorithm(alg, VARIANTS.extreme);
       if (!r.ok) throw new Error(r.error);

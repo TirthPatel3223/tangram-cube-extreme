@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
+/** The Tangram app's camera presets. Other puzzles pass their own presets to `createStage`. */
 export type ViewName = 'prism' | 'cube';
 
-interface ViewPreset {
+export interface ViewPreset {
   /** World-from-model rotation, given as rows (model vector p -> (row0·p, row1·p, row2·p)). */
   rows: [number[], number[], number[]];
   /** Viewing direction (spherical): azimuth around +Y from +Z, elevation above the horizon, in degrees. */
@@ -16,7 +17,7 @@ const S2 = Math.SQRT2;
 const S3 = Math.sqrt(3);
 const S6 = Math.sqrt(6);
 
-const VIEWS: Record<ViewName, ViewPreset> = {
+export const TANGRAM_VIEWS: Readonly<Record<ViewName, ViewPreset>> = {
   // Corner T straight up (the turning diagonal vertical) and the F flip edge facing the viewer.
   prism: {
     rows: [
@@ -54,7 +55,7 @@ export interface Stage {
   readonly camera: THREE.PerspectiveCamera;
   /** Parent of all puzzle meshes; its local frame is the puzzle model frame. */
   readonly root: THREE.Group;
-  setView(name: ViewName, animate?: boolean): void;
+  setView(name: string, animate?: boolean): void;
   /**
    * Rotate the puzzle freely about the screen axes, as if dragging its front surface by (dx, dy)
    * pixels. There is no up-vector and no angle limit: it can roll over in any direction.
@@ -91,7 +92,11 @@ function presetQuaternion(p: ViewPreset): THREE.Quaternion {
   return eye.quaternion.clone().invert().multiply(model);
 }
 
-export function createStage(container: HTMLElement): Stage {
+export function createStage(
+  container: HTMLElement,
+  views: Readonly<Record<string, ViewPreset>> = TANGRAM_VIEWS,
+  initialView = 'prism',
+): Stage {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -175,8 +180,10 @@ export function createStage(container: HTMLElement): Stage {
     placeCamera();
   };
 
-  const setView = (name: ViewName, animate = true) => {
-    const q1 = presetQuaternion(VIEWS[name]);
+  const setView = (name: string, animate = true) => {
+    const preset = views[name];
+    if (!preset) return;
+    const q1 = presetQuaternion(preset);
     spin.vx = 0;
     spin.vy = 0;
     if (!animate) {
@@ -223,7 +230,7 @@ export function createStage(container: HTMLElement): Stage {
 
   new ResizeObserver(resize).observe(container);
   resize();
-  setView('prism', false);
+  setView(initialView, false);
 
   return { renderer, labelRenderer, scene, camera, root, setView, rotateBy, fling, stopMotion, zoomBy, frame, resize };
 }

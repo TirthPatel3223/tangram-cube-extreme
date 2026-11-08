@@ -1,0 +1,78 @@
+import { describe, expect, it } from 'vitest';
+import { formatTurns, parseTurns, resolveAlgorithm } from '../../src/curvy/notation';
+import { buildModel } from '../../src/curvy/pieces';
+import { DEFAULT_SCRAMBLE, generateCurvyScramble } from '../../src/curvy/scramble';
+import { CurvyState } from '../../src/curvy/state';
+import { mulberry32 } from '../../src/puzzle/moves';
+
+describe('curvy notation', () => {
+  it('round-trips half turns and jumble stops', () => {
+    const text = 'UF UR+ FL- DB BR+ DL-';
+    const r = parseTurns(text);
+    expect(r.ok && formatTurns(r.turns)).toBe(text);
+  });
+
+  it('accepts either letter order, lower case, primes and brackets', () => {
+    const r = parseTurns("fu (rf+, lu-) DB' bd2");
+    expect(r.ok && formatTurns(r.turns)).toBe('UF FR+ UL- DB DB');
+  });
+
+  it('rejects bad input with a position', () => {
+    const notEdge = parseTurns('UF UD');
+    expect(notEdge.ok).toBe(false);
+    if (!notEdge.ok) expect(notEdge.index).toBe(3);
+    expect(parseTurns('UF X').ok).toBe(false);
+    expect(parseTurns('U').ok).toBe(false);
+  });
+
+  it('resolves stops in context: UF+ three times walks 70.53°, 109.47°, 180°', () => {
+    const st = CurvyState.solved(buildModel('plus'));
+    const p = parseTurns('UF+ UF+ UF+');
+    if (!p.ok) throw new Error(p.error);
+    const r = resolveAlgorithm(st, p.turns);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const deg = r.turns.map((t) => (t.angle * 180) / Math.PI);
+    expect(deg[0]).toBeCloseTo(-70.5288, 3);
+    expect(deg[1]).toBeCloseTo(-38.9424, 3);
+    expect(deg[2]).toBeCloseTo(-70.5288, 3);
+  });
+
+  it('reports a blocked move by number and applies nothing', () => {
+    const st = CurvyState.solved(buildModel('plus'));
+    const p = parseTurns('UF+ UR');
+    if (!p.ok) throw new Error(p.error);
+    const r = resolveAlgorithm(st, p.turns);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toMatch(/Move 2 \(UR\)/);
+    expect(st.isHome()).toBe(true);
+  });
+});
+
+describe.each(['cc', 'plus'] as const)('%s scramble', (variant) => {
+  const model = buildModel(variant);
+
+  it('the first two phases (180° turns + the combo) always end as a flush, fully turnable cube', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const s = generateCurvyScramble(model, mulberry32(seed), { ...DEFAULT_SCRAMBLE, jumbles: 0 });
+      expect(s.state.isCubeShape(), `seed ${seed}`).toBe(true);
+      expect(s.state.protruding(), `seed ${seed}`).toEqual([]);
+      expect(s.text).toMatch(/\(/); // contains combo groups
+    }
+  });
+
+  it('is deterministic, replays from its text, and ends genuinely jumbled', () => {
+    const a = generateCurvyScramble(model, mulberry32(42));
+    const b = generateCurvyScramble(model, mulberry32(42));
+    expect(a.text).toBe(b.text);
+    const p = parseTurns(a.text);
+    if (!p.ok) throw new Error(p.error);
+    const r = resolveAlgorithm(CurvyState.solved(model), p.turns);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const st = CurvyState.solved(model);
+    for (const t of r.turns) st.apply(t, false);
+    expect(st.equals(a.state)).toBe(true);
+    expect(a.state.isCubeShape()).toBe(false);
+  });
+});

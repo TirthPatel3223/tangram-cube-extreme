@@ -1,6 +1,6 @@
 # Playbook: building a 3D twisty-puzzle web app
 
-Context for an agent (e.g. Opus 5.5 in Claude Code) asked to recreate a physical twisty puzzle as an interactive 3D web app. It is deliberately short: puzzles vary a lot, so use it as a checklist and adapt. It was written after building the DaYan Tangram Cube Extreme simulator in this repo.
+Context for an agent (e.g. Opus 5.5 in Claude Code) asked to recreate a physical twisty puzzle as an interactive 3D web app. It is deliberately short: puzzles vary a lot, so use it as a checklist and adapt. It was written after building the DaYan Tangram Cube Extreme simulator in this repo and extended after the Curvy Copter and Curvy Copter Plus (curved cuts, jumbling, bandaging).
 
 **The one rule:** get the real geometry from the real puzzle *before* building rendering or UI. Most rework comes from guessing cut positions from low-resolution product photos.
 
@@ -34,10 +34,12 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
 - **Jaap's Puzzle Page, Ruwix, Speedsolving wiki.** Mechanism, piece counts, notation, state counts.
 - **Retail pages.** Shopify stores expose `…/products/<handle>.json`, which lists every product image URL. Many shops return 403/429 to fetchers, so open them in the browser tool instead.
 - **The box and packaging.** These can reveal counts (the Tangram Extreme box says "11 Tangram", meaning 11 shapes per face).
+- **The maker's own words.** Product pages can state the geometry outright. Meffert's Curvy Copter page says the cut is "placed at an angle of 32 degrees"; the photo fit gave 32.5°. Archived copies (web.archive.org, collectors' PDFs) help when shops block fetchers.
+- **Forum threads by the designer and owners.** They hold notation, known algorithms with their orders (e.g. a commutator of order 6), and which moves real puzzles block. All of these make good tests.
 - **Classify the puzzle.**
   - Turning type: face, corner, edge, or a hybrid.
   - Axes and layers per axis, and the turn angles.
-  - Cut type: plane or sphere (curvy).
+  - Cut type: plane, or curved. A turning part must be a solid of revolution about its axis, so a curved cut is a cone or sphere centred on the axis ("parabolic" lines on a face are cone sections).
   - Behaviour: *doctrinaire* (cuts always realign), *bandaged*, *shape-shifting*, or *jumbling*. A puzzle jumbles when it "cannot be unbandaged into a doctrinaire puzzle" (van Deventer & Cohen); the Helicopter Cube's 70.5° turns are the classic case. Users often say "jumbling" to mean shape-shifting, so clarify.
 - **Licences.** 3D models online may be off-limits as input; Sketchfab "NoAI" tags, for example. Prefer photos and first principles.
 
@@ -52,8 +54,13 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
    - Compare fits with candidate "nice" values (1/3, golden ratio, etc.). Keep the fitted value in one config constant.
 4. **Check handedness.** Mirror-image cut sets look almost the same. Find an asymmetric feature in the photo (which line is full-length versus partial) and match it.
 5. **Look for coincidences.** Cuts meeting exactly on cube edges (on the Tangram, `c + b = 1`) reveal design intent and remove free parameters.
+6. **Jumble angles come from the axes, not the cut shape.** A partial turn unlocks a neighbour only when it carries one axis onto another at the same angle from the turning axis. For the 12 edge axes that is arccos(1/3) = 70.53° and 109.47°. Owners often describe these clicks as "60°" or "120°", so show them the numbers.
+7. **Prototype numerically before building the app.** A Python voxel model of the cut arrangement, with a strict straddle test, reproduced the piece counts and every behaviour the user described: unlock pairs, corner/triangle swaps, which twisted pieces block which edges, and the order of a known commutator. The TS engine's tests then reuse those numbers.
+8. **Fit the free parameters, then test alternatives.** For the cones, fit the tilt, then move the apex off the face centres and confirm the fit gets worse. A wrong family of guesses can still match a few counts.
 
 *Lesson from the Tangram build:* the first hypothesis put a corner cut on the face diagonal. It reproduced some counts but was wrong. One straight-on photo from the user fixed it immediately. Ask for that photo in step 1, not after building.
+
+*Lesson from the Curvy Copter build:* the extra pieces of a "plus" or unbandaged variant are often the original cuts turned by a jumble angle. On the Plus, the small triangle's third cut is the FR cone turned −70.53° about UF. That makes it mechanically identical to a corner, which is why the two swap places.
 
 ## 4. Architecture that works
 
@@ -61,14 +68,25 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
 - **Engine (pure TypeScript, no DOM).**
   - Pieces are convex cells: enumerate the sign combinations of the cut planes per layer, then use the H-representation and vertex enumeration. Drop empty cells.
   - Non-planar cuts (curvy/spherical) need mesh booleans instead (e.g. `manifold-3d`).
+    - A cone is a ruled surface: one ring of triangles is exact along its generators.
+    - Offset a cone by sliding its apex along the axis by offset / sin(half-angle); that gives the piece gaps.
+    - Build only the distinct shapes. The cube's 24 rotations turned 3 or 4 prototype shapes into 44 or 68 pieces, which takes milliseconds.
   - **Doctrinaire, all axes through the centre:** store each piece's orientation as an index into a finite rotation group, built by closure with integer multiplication tables. Nothing drifts.
   - **Jumbling or partial angles:** store full transforms. A move is legal when no piece straddles the moving region's boundary; snap only to angles where cuts realign.
+    - Intern orientations (a table of matrices keyed to 1e-9) so long sessions don't drift and states compare by id. Jumble rotations are often rational (entries k/3), so matrices stay exact.
+    - Represent pieces by constraint lists (inside/outside each cut, inside the cube, outside the core) with surface sample points. Point-in-piece tests are then exact, and no mesh is needed in the engine.
+    - Physical legality has two stages:
+      1. No straddlers means the turn is free.
+      2. Otherwise, anchor edge pieces to their own axis and assign other crossing pieces by majority. Then sweep the turn in small steps and block on collisions deeper than a small tolerance (0.3 mm). Overhangs into empty space then pass and real collisions don't, which is what owners see.
+    - Find stops exactly: the angles where a moving piece's cut axis lands on another turning axis (atan2 from the vectors), and that edge's cut is clear there but not just before or after.
+    - Context-dependent notation (`UF+` = to the next stop) needs the exact angle in the history, so undo stays exact.
   - A move is a region (`n·x > d`) plus a rotation. Apply it to the pieces whose centroid is in the region.
   - Keep notation parsing, scramble (seeded random moves), undo/redo history and an animation queue as separate, testable modules.
 - **Rendering.**
   - Bodies: take the convex hull of each face polygon inset *within its own plane*. Rolling-ball rounding erodes faces at acute cuts, which makes stickers overhang the plastic.
-  - Stickers: the face polygon inset by a margin, with rounded corners, lifted slightly off the surface.
+  - Stickers: the face polygon inset by a margin, with rounded corners, lifted slightly off the surface. For curved pieces: slice the exact solid just under the face, then use a 2D offset of −(margin + r) followed by +r with round joins. Subtract any printed details, such as the Plus's dot.
   - Tone mapping: `NeutralToneMapping` keeps sticker colours true.
+  - Glossy black plastic seen head-on reads as grey under a wide specular lobe. A lower base `specularIntensity` (about 0.35) plus a little clearcoat keeps it black.
 - **Interaction.**
   - Fixed camera; rotate the puzzle root like a trackball (free rotation, no pole limits).
   - Pointer events: drag rotates, two-finger trackpad (wheel) rotates, Ctrl+wheel or pinch zooms. Treat a press as a tap only if it moved less than about 6 px and involved one pointer.
@@ -86,15 +104,17 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
   - Notation round-trips.
   - Undo/redo through the real animator, headless.
 - **Visual checks (browser tool).**
-  - A face-on render compared with the user's photo.
+  - A face-on render compared with the user's photo: rectify the photo with the fitted homography and put the two side by side.
   - The solved view compared with a retail photo.
   - Screenshots after each move type, and scrambled states.
   - Phone width, using an iframe at 390 px.
   - The production build, with no console errors.
 - **Measure visual complaints.** When the user reports a visual flaw, measure it before and after the fix (e.g. ray-cast the plastic rim around every sticker).
 - **Testing gotchas.** Background tabs throttle `requestAnimationFrame`, so animations look stuck in automated tests. Simulate touch with synthetic `PointerEvent`s and trackpad swipes with `WheelEvent`s.
+- **Jumbling tests.** On a bandaging puzzle a hand-written sequence can be legitimately blocked. Take test sequences from verified sources (the user, forum algorithms) or generate them with the engine, and assert the blocked sets exactly.
 
 ## 6. Ship
 
 - **GitHub Pages:** set `base: './'` in `vite.config.ts` and deploy `dist/` with a GitHub Actions workflow (`actions/upload-pages-artifact` + `actions/deploy-pages`). Free accounts need a public repo for Pages.
 - **Before the first commit:** keep personal photos and other large reference files out of the repo (`.gitignore`), and document the research and its sources in `docs/`.
+- **Several puzzles on one site:** give each puzzle a tab that is a plain `?puzzle=` link, and load each app with a dynamic `import()`. A heavy dependency, such as the 208 kB gzipped WebAssembly geometry kernel, is then downloaded only on the tabs that need it.
