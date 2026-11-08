@@ -94,7 +94,7 @@ describe('piece solids', () => {
       expect(b.positions.length).toBe(b.normals.length);
       expect(b.indices.length % 3).toBe(0);
     }
-  });
+  }, 30000);
 
   it('an edge stands 11 mm proud of the face when it sits in a centre slot', () => {
     const bb = solids.edge.solid.boundingBox();

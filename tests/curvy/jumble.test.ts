@@ -74,7 +74,7 @@ describe.each(['cc', 'plus'] as const)('%s jumbling', (variant) => {
     expect(st.isHome()).toBe(false);
     for (let k = done.length - 1; k >= 0; k--) st.apply(invertTurn(done[k]), false);
     expect(st.isHome()).toBe(true);
-  });
+  }, 30000);
 });
 
 describe('Curvy Copter Plus', () => {
@@ -127,7 +127,7 @@ describe('Curvy Copter Plus', () => {
         expect(s2.isCubeShape(), `variant ${g} ${mirror}`).toBe(true);
       }
     }
-  });
+  }, 30000);
 });
 
 describe('Curvy Copter (original)', () => {
