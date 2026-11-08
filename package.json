@@ -2,7 +2,7 @@
   "name": "tangram-cube-extreme",
   "private": true,
   "version": "0.1.0",
-  "description": "Interactive 3D twisty-puzzle simulators: the DaYan Tangram Cube Extreme (and original), and Meffert's Curvy Copter and Curvy Copter Plus with curved cuts, jumbling and real bandaging.",
+  "description": "Interactive 3D twisty-puzzle simulators: the DaYan Tangram Cube Extreme (and original), Meffert's Curvy Copter and Curvy Copter Plus with curved cuts, jumbling and real bandaging, and the Maltese Gear Cube with geared 45° middle layers.",
   "type": "module",
   "engines": {
     "node": ">=20.19"

@@ -3,7 +3,7 @@ import type { Stage } from '../../render/scene';
 import { distance } from '../../puzzle/vec';
 import { EDGES, EDGE_HANDLE, type EdgeName } from '../geometry';
 import type { CurvyState } from '../state';
-import type { CurvyVisual } from './meshes';
+import { type CurvyVisual, PICK_LAYER } from './meshes';
 
 export interface CurvyPickHandlers {
   onHover(edge: EdgeName | null, clientX: number, clientY: number): void;
@@ -27,6 +27,7 @@ export class CurvyPicker {
     private readonly getState: () => CurvyState,
     private readonly handlers: CurvyPickHandlers,
   ) {
+    this.raycaster.layers.set(PICK_LAYER);
     const el = stage.renderer.domElement;
     el.addEventListener('pointermove', this.onMove);
     el.addEventListener('pointerleave', () => this.clearHover());

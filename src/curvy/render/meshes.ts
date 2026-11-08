@@ -1,10 +1,16 @@
 import * as THREE from 'three';
-import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Mat3 } from '../../puzzle/vec';
 import { COLORS, CORE_R, LOOK } from '../config';
 import { FACE_NORMAL } from '../geometry';
 import type { CurvyModel } from '../pieces';
-import type { MeshData, ShapeGeometry } from './csg';
+import type { BodyData, MeshData, ShapeGeometry } from './csg';
+
+/**
+ * Layer of the invisible picking meshes. The camera renders only layer 0, and the picker's
+ * raycaster tests only this layer, so clicks hit the light sharp-edged bodies, not the rounded ones.
+ */
+export const PICK_LAYER = 1;
+const PICK_MATERIAL = new THREE.MeshBasicMaterial();
 
 export interface CurvyVisual {
   readonly pieceId: number;
@@ -14,14 +20,22 @@ export interface CurvyVisual {
   readonly stickerMaterials: readonly THREE.MeshPhysicalMaterial[];
 }
 
-function bodyGeometry(m: MeshData): THREE.BufferGeometry {
+function bodyGeometry(m: BodyData): THREE.BufferGeometry {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
+  // Analytic normals: smooth across the cone facets and the rounded edges, flat on the faces.
+  g.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3));
+  g.setIndex(new THREE.BufferAttribute(m.indices, 1));
+  g.computeBoundingSphere();
+  return g;
+}
+
+function plainGeometry(m: MeshData): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
   g.setIndex(new THREE.BufferAttribute(m.indices, 1));
-  // Smooth across the facets of each cone, sharp where two cuts (or a cut and a face) meet.
-  const creased = toCreasedNormals(g, (35 * Math.PI) / 180);
-  g.dispose();
-  return creased;
+  g.computeBoundingSphere();
+  return g;
 }
 
 function stickerGeometry(m: MeshData, normal: readonly number[]): THREE.BufferGeometry {
@@ -40,6 +54,7 @@ function stickerGeometry(m: MeshData, normal: readonly number[]): THREE.BufferGe
  */
 export function buildCurvyVisuals(model: CurvyModel, geos: readonly ShapeGeometry[]): CurvyVisual[] {
   const bodies = geos.map((g) => bodyGeometry(g.body));
+  const picks = geos.map((g) => plainGeometry(g.pick));
   const stickers = geos.map((g) => new Map(g.stickers.map((s) => [s.face, stickerGeometry(s, FACE_NORMAL[s.face])])));
   return model.pieces.map((piece) => {
     const group = new THREE.Group();
@@ -59,6 +74,10 @@ export function buildCurvyVisuals(model: CurvyModel, geos: readonly ShapeGeometr
     const body = new THREE.Mesh(bodies[piece.shape], bodyMaterial);
     body.userData.pieceId = piece.id;
     group.add(body);
+    const pick = new THREE.Mesh(picks[piece.shape], PICK_MATERIAL);
+    pick.layers.set(PICK_LAYER);
+    pick.userData.pieceId = piece.id;
+    group.add(pick);
     const meshes: THREE.Mesh[] = [body];
     const stickerMaterials: THREE.MeshPhysicalMaterial[] = [];
     for (const s of piece.stickers) {

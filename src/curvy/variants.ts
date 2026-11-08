@@ -3,8 +3,6 @@ export type CurvyVariantId = 'cc' | 'plus';
 export interface CurvyVariantDef {
   readonly id: CurvyVariantId;
   readonly name: string;
-  /** URL value of the tab (`?puzzle=`). */
-  readonly tab: 'curvy-copter' | 'curvy-copter-plus';
   readonly designYear: number;
   readonly producedYear: number;
   readonly pieces: number;
@@ -18,7 +16,6 @@ export const CURVY_VARIANTS: Readonly<Record<CurvyVariantId, CurvyVariantDef>> =
   cc: {
     id: 'cc',
     name: 'Curvy Copter',
-    tab: 'curvy-copter',
     designYear: 2010,
     producedYear: 2011,
     pieces: 44,
@@ -32,7 +29,6 @@ export const CURVY_VARIANTS: Readonly<Record<CurvyVariantId, CurvyVariantDef>> =
   plus: {
     id: 'plus',
     name: 'Curvy Copter Plus',
-    tab: 'curvy-copter-plus',
     designYear: 2010,
     producedYear: 2014,
     pieces: 68,

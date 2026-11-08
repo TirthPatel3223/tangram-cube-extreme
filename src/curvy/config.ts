@@ -71,6 +71,13 @@ export const LOOK = {
   stickerLiftMm: 0.06, // stickers sit just above the plastic
   dotDiameterMm: 3.1, // the black dot on the Plus's small triangles
   coneSegments: 256, // smoothness of the curved cuts
+  // Rounded piece edges (rolling-ball fillets, see render/fillet.ts). The outer radius matches the
+  // Tangram's 0.55 mm bevel; edges between two cuts only show mid-turn or when jumbled.
+  edgeRoundMm: 0.55, // where a cut meets a face, and the cube's own edges
+  cutRoundMm: 0.3, // where two cuts (or a cut and the core) meet
+  // Fillet resolution. The normals are analytic, so a coarse mesh still shades smoothly.
+  filletStepMm: 1.0, // spacing of the fillet's profiles along each edge
+  filletArcStepDeg: 15, // largest angle between neighbouring points across a fillet
 };
 
 export const TIMING = {

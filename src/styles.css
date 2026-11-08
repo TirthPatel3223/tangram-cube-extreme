@@ -1,42 +1,12 @@
 /*
- * Theme tokens sampled from tirthpatel.org: a slate-navy dark theme (default) and a soft white light theme,
- * with a blue accent and translucent "glass" surfaces. The theme is the `data-theme` attribute on <html>.
+ * Theme tokens sampled from tirthpatel.org: a soft white light theme (the default) and a slate-navy
+ * dark theme, with a blue accent and translucent "glass" surfaces. The theme is the `data-theme`
+ * attribute on <html>; without it the page is light.
  */
-:root,
-:root[data-theme='dark'] {
-  --bg: #0f1419;
-  --glass: rgba(15, 20, 26, 0.72);
-  --glass-hover: rgba(148, 163, 184, 0.14);
-  --glass-press: rgba(148, 163, 184, 0.22);
-  --glass-focus: rgba(96, 165, 250, 0.12);
-  --glass-border: rgba(148, 163, 184, 0.2);
-  --glass-border-strong: #60a5fa;
-  --fill-subtle: rgba(148, 163, 184, 0.08);
-  --fill: rgba(148, 163, 184, 0.14);
-  --line: rgba(148, 163, 184, 0.2);
-  --line-strong: rgba(148, 163, 184, 0.4);
-  --ring: rgba(96, 165, 250, 0.2);
-  --scroll: rgba(148, 163, 184, 0.35);
-  --placeholder: rgba(148, 163, 184, 0.6);
-  --halo: rgba(255, 255, 255, 0.16);
-  --ink: #e2e8f0;
-  --ink-soft: #cbd5e1;
-  --ink-muted: #94a3b8;
-  --title: #f1f5f9;
-  --accent: #60a5fa;
-  --accent-hover: #93c5fd;
-  --pill: #60a5fa;
-  --pill-hover: #93c5fd;
-  --pill-ink: #0f1419;
-  --label-bg: rgba(30, 41, 59, 0.94);
-  --danger: #fda4af;
-  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.06);
-  --shadow-pill: 0 8px 22px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+:root {
   --radius-card: 20px;
   --radius-field: 12px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  color-scheme: dark;
   font-family:
     'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     sans-serif;
@@ -44,6 +14,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
+:root,
 :root[data-theme='light'] {
   --bg: #f8f9fc;
   --glass: rgba(255, 255, 255, 0.78);
@@ -75,6 +46,39 @@
   --shadow-pill: 0 8px 20px rgba(37, 99, 235, 0.25);
   --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.18);
   color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1419;
+  --glass: rgba(15, 20, 26, 0.72);
+  --glass-hover: rgba(148, 163, 184, 0.14);
+  --glass-press: rgba(148, 163, 184, 0.22);
+  --glass-focus: rgba(96, 165, 250, 0.12);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-border-strong: #60a5fa;
+  --fill-subtle: rgba(148, 163, 184, 0.08);
+  --fill: rgba(148, 163, 184, 0.14);
+  --line: rgba(148, 163, 184, 0.2);
+  --line-strong: rgba(148, 163, 184, 0.4);
+  --ring: rgba(96, 165, 250, 0.2);
+  --scroll: rgba(148, 163, 184, 0.35);
+  --placeholder: rgba(148, 163, 184, 0.6);
+  --halo: rgba(255, 255, 255, 0.16);
+  --ink: #e2e8f0;
+  --ink-soft: #cbd5e1;
+  --ink-muted: #94a3b8;
+  --title: #f1f5f9;
+  --accent: #60a5fa;
+  --accent-hover: #93c5fd;
+  --pill: #60a5fa;
+  --pill-hover: #93c5fd;
+  --pill-ink: #0f1419;
+  --label-bg: rgba(30, 41, 59, 0.94);
+  --danger: #fda4af;
+  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  --shadow-pill: 0 8px 22px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
 }
 
 *,
@@ -115,7 +119,72 @@ svg {
   flex: none;
 }
 
-/* ---------- stage (the 3D puzzle) ---------- */
+/* ---------- stage (the 3D puzzle) and the puzzle selector above it ---------- */
+
+.stage-wrap {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Glass pill bar centred over the 3D view; kept clear of the theme toggle in the top-left corner. */
+.puzzles {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100% - 2 * 76px);
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  background: var(--glass);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  transform: translateX(-50%);
+}
+
+.puzzles__tab {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 16px;
+  border-radius: 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  text-wrap: balance;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+
+.puzzles__tab:not([aria-current='page']):hover {
+  background: var(--glass-hover);
+  color: var(--title);
+}
+
+.puzzles__tab[aria-current='page'] {
+  background: var(--pill);
+  color: var(--pill-ink);
+  box-shadow: var(--shadow-pill);
+}
+
+.puzzles__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .stage {
   position: relative;
@@ -221,51 +290,6 @@ svg {
   gap: 14px;
   scrollbar-width: thin;
   scrollbar-color: var(--scroll) transparent;
-}
-
-/* Puzzle tabs: one link per puzzle, styled like the segmented pills. */
-.tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--fill-subtle);
-}
-
-.tabs__tab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  padding: 6px 8px;
-  border-radius: 12px;
-  color: var(--ink);
-  font-size: 13.5px;
-  font-weight: 650;
-  line-height: 1.2;
-  text-align: center;
-  text-decoration: none;
-  transition:
-    background-color 0.15s,
-    color 0.15s,
-    box-shadow 0.15s;
-}
-
-.tabs__tab:not([aria-current='page']):hover {
-  background: var(--glass-hover);
-}
-
-.tabs__tab[aria-current='page'] {
-  background: var(--pill);
-  color: var(--pill-ink);
-  box-shadow: var(--shadow-pill);
-}
-
-.tabs__tab:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
 .panel__header {
@@ -409,6 +433,21 @@ svg {
 .hint code {
   font: 650 12px/1 var(--mono);
   color: var(--ink);
+}
+
+/* ---------- Maltese Gear Cube: 12 face buttons, clockwise row over counterclockwise row ---------- */
+
+.face-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mv--face {
+  min-width: 0;
+  height: 46px;
+  padding: 0 2px;
+  font-size: 17px;
 }
 
 /* ---------- Curvy Copter: 12 edge buttons in three rows ---------- */
@@ -879,9 +918,34 @@ input:focus-visible {
 @media (max-width: 860px) {
   #app {
     grid-template-columns: 1fr;
-    grid-template-rows: 62svh auto;
     height: auto;
     min-height: 100svh;
+  }
+
+  /* The selector moves into the page flow above the puzzle, beside the theme toggle, two per row. */
+  .stage-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .puzzles {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: auto;
+    max-width: none;
+    margin: 16px 16px 0 72px;
+    transform: none;
+  }
+
+  .puzzles__tab {
+    padding: 6px 8px;
+    font-size: 13.5px;
+  }
+
+  .stage {
+    height: 62svh;
+    flex: none;
   }
 
   .panel {

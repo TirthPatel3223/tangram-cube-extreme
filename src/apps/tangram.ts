@@ -15,15 +15,15 @@ import type { VariantId } from '../puzzle/variants';
 import { Animator } from '../render/animator';
 import { GestureControls } from '../render/controls';
 import { PartLabels } from '../render/labels';
-import { type PieceVisual, buildPieceVisuals, disposeVisuals, setHighlighted } from '../render/meshes';
+import { type PieceVisual, buildPieceVisuals, setHighlighted } from '../render/meshes';
 import { Picker } from '../render/picking';
 import { TANGRAM_VIEWS, type ViewName, createStage } from '../render/scene';
 import { bindKeyboard } from '../ui/keyboard';
 import { createPanel } from '../ui/panel';
 import type { AppContext } from './context';
 
-/** The DaYan Tangram Cube Extreme / Tangram Cube app (the site's original puzzle). */
-export function start({ stageEl, panelEl, tipEl, params }: AppContext): void {
+/** The DaYan Tangram Cube Extreme / Tangram Cube app (one tab each). */
+export function start({ stageEl, panelEl, tipEl, params }: AppContext, variant: VariantId): void {
   const sParam = Number(params.get('s'));
   const cutS = sParam > 0 && sParam < 1 / 3 ? sParam : CUT_S;
 
@@ -31,8 +31,8 @@ export function start({ stageEl, panelEl, tipEl, params }: AppContext): void {
   const labels = new PartLabels(stage.root);
   const history = new MoveHistory<Move>(invertMove);
 
-  let model: PuzzleModel = createModel(params.get('variant') === 'original' ? 'original' : 'extreme', cutS);
-  let visuals: PieceVisual[] = buildPieceVisuals(model);
+  const model: PuzzleModel = createModel(variant, cutS);
+  const visuals: PieceVisual[] = buildPieceVisuals(model);
   let scrambleText: string | null = null;
   let speed = 1;
   let hovered: Axis | null = null;
@@ -54,9 +54,6 @@ export function start({ stageEl, panelEl, tipEl, params }: AppContext): void {
   });
 
   const panel = createPanel(panelEl, {
-    onVariant: (id) => {
-      if (id !== model.variant.id) loadVariant(id);
-    },
     onMoveButton: (text) => {
       const r = parseAlgorithm(text, model.variant);
       if (r.ok) r.moves.forEach((m) => turn(m));
@@ -88,19 +85,6 @@ export function start({ stageEl, panelEl, tipEl, params }: AppContext): void {
   animator.onMoveApplied = () => {
     if (hovered) highlight(hovered); // the highlighted part may now contain different pieces
   };
-
-  function loadVariant(id: VariantId) {
-    model = createModel(id, cutS);
-    disposeVisuals(visuals);
-    visuals = buildPieceVisuals(model);
-    animator.reset(visuals, PuzzleState.solved(model));
-    picker.setVisuals(visuals);
-    labels.build(model);
-    history.clear();
-    scrambleText = null;
-    highlight(null);
-    refresh();
-  }
 
   function refresh() {
     document.title = `${model.variant.name} · 3D simulator`;

@@ -1,4 +1,3 @@
-import { puzzleTabsHtml } from '../../ui/puzzleTabs';
 import { EDGES, type EdgeName } from '../geometry';
 import { type AppliedTurn, formatTurn } from '../notation';
 import type { CurvyVariantDef } from '../variants';
@@ -72,7 +71,6 @@ function template(v: CurvyVariantDef): string {
         .join('')}</div>`,
   ).join('');
   return /* html */ `
-  ${puzzleTabsHtml(v.tab)}
   <header class="panel__header">
     <p class="eyebrow eyebrow--brand">${ICON.cube}<span>Meffert's · design by Tom van der Zanden</span></p>
     <h1 class="brand__title">${v.name}</h1>

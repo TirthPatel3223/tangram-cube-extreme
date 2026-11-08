@@ -3,11 +3,27 @@ import type { ManifoldToplevel } from 'manifold-3d';
 import { FACE_NORMAL, pieceValue } from '../../src/curvy/geometry';
 import { buildModel } from '../../src/curvy/pieces';
 import { type ShapeGeometry, buildShapeGeometry, defaultCsgOptions, loadManifold } from '../../src/curvy/render/csg';
+import { type Surface, shapeSurfaces } from '../../src/curvy/render/fillet';
+import { type Vec3, cross, dot, normalize, sub } from '../../src/puzzle/vec';
 
 let wasm: ManifoldToplevel;
 beforeAll(async () => {
   wasm = await loadManifold();
 });
+
+/** Like pieceValue for the shrunk body's surfaces: <= 0 inside (the tip cut is a union of two surfaces). */
+function bodyValue(surfaces: readonly Surface[], p: Vec3): number {
+  let worst = -Infinity;
+  const tip: number[] = [];
+  for (const s of surfaces) {
+    if (s.union) tip.push(s.g(p));
+    else worst = Math.max(worst, s.g(p));
+  }
+  for (let i = 0; i < tip.length; i += 2) worst = Math.max(worst, Math.min(tip[i], tip[i + 1]));
+  return worst;
+}
+
+const vec = (a: ArrayLike<number>, i: number): Vec3 => [a[3 * i], a[3 * i + 1], a[3 * i + 2]];
 
 /** Voxel estimate of a shape's volume. */
 function voxelVolume(cons: Parameters<typeof pieceValue>[0], step = 0.02): number {
@@ -66,6 +82,86 @@ describe.each(['cc', 'plus'] as const)('%s meshes', (variant) => {
         }
       }
     });
+  });
+
+  it('rounds every crease (only where the tip cut turns concave does a fillet stop short)', () => {
+    model.shapes.forEach((s, i) => {
+      const { surfaces } = shapeSurfaces(s.constraints, opts.gap / 2);
+      const onTwo = (positions: Float32Array) => {
+        let n = 0;
+        for (let k = 0; k < positions.length / 3; k++) {
+          const p = vec(positions, k);
+          const on = surfaces.filter((sf) => Math.abs(sf.g(p)) < 2e-4);
+          if (new Set(on.map((sf) => sf.group)).size >= 2 && !on.some((sf) => sf.union)) n++;
+        }
+        return n;
+      };
+      expect(onTwo(geo[i].pick.positions), s.kind).toBeGreaterThan(100); // the sharp body has creases
+      expect(onTwo(geo[i].body.positions), s.kind).toBe(0);
+    });
+  });
+
+  it('rounding never cuts deeper than a rolling ball would', () => {
+    const { outerRadius, innerRadius } = opts.fillet!;
+    model.shapes.forEach((s, i) => {
+      const { surfaces } = shapeSurfaces(s.constraints, opts.gap / 2);
+      const P = geo[i].body.positions;
+      let worst = -Infinity;
+      for (let k = 0; k < P.length / 3; k++) {
+        const p = vec(P, k);
+        // The surfaces bounding the body near p; of each tip cut (a union) only the one that holds.
+        const near = surfaces.filter(
+          (sf) =>
+            sf.g(p) > -2 * outerRadius &&
+            (!sf.union || surfaces.every((o) => o === sf || o.group !== sf.group || o.g(p) > sf.g(p))),
+        );
+        const depth = -Math.max(...near.map((sf) => sf.g(p)));
+        // A ball of radius r in a crease whose normals are phi apart rests r(1 - cos(phi/2)) below
+        // both surfaces: p must be within that of its nearest surface for some pair of them.
+        let allowed = 0;
+        for (const a of near) {
+          for (const b of near) {
+            if (a.group === b.group) continue;
+            const phi = Math.acos(Math.max(-1, Math.min(1, dot(a.n(p), b.n(p)))));
+            const r = a.outer || b.outer ? outerRadius : innerRadius;
+            allowed = Math.max(allowed, r * (1 - Math.cos(phi / 2)));
+          }
+        }
+        worst = Math.max(worst, depth - allowed);
+      }
+      expect(worst, s.kind).toBeLessThan(3e-4);
+    });
+  });
+
+  it('stickers sit on the flat part of their faces, clear of the rounded edges', () => {
+    const r = opts.fillet!.outerRadius;
+    model.shapes.forEach((s, i) => {
+      const { surfaces } = shapeSurfaces(s.constraints, opts.gap / 2);
+      for (const st of geo[i].stickers) {
+        const n = FACE_NORMAL[st.face];
+        for (let k = 0; k < st.positions.length / 3; k++) {
+          const p = vec(st.positions, k);
+          const h = dot(p, n);
+          // The ball under this point, touching the face, must fit inside the body.
+          const c: Vec3 = [p[0] - (h - 1 + r) * n[0], p[1] - (h - 1 + r) * n[1], p[2] - (h - 1 + r) * n[2]];
+          expect(bodyValue(surfaces, c), s.kind).toBeLessThan(-r + 1e-6);
+        }
+      }
+    });
+  });
+
+  it('body normals are unit length and face out of their triangles', () => {
+    for (const g of geo) {
+      const { positions: P, normals: N, indices: I } = g.body;
+      for (let k = 0; k < N.length / 3; k++) expect(Math.hypot(...vec(N, k))).toBeCloseTo(1, 4);
+      for (let t = 0; t < I.length; t += 3) {
+        const a = vec(P, I[t]);
+        const face = cross(sub(vec(P, I[t + 1]), a), sub(vec(P, I[t + 2]), a));
+        if (Math.hypot(...face) < 1e-10) continue;
+        const f = normalize(face);
+        for (let j = 0; j < 3; j++) expect(dot(vec(N, I[t + j]), f)).toBeGreaterThan(0.3);
+      }
+    }
   });
 
   if (variant === 'plus') {

@@ -1,6 +1,6 @@
 # Playbook: building a 3D twisty-puzzle web app
 
-Context for an agent (e.g. Opus 5.5 in Claude Code) asked to recreate a physical twisty puzzle as an interactive 3D web app. It is deliberately short: puzzles vary a lot, so use it as a checklist and adapt. It was written after building the DaYan Tangram Cube Extreme simulator in this repo and extended after the Curvy Copter and Curvy Copter Plus (curved cuts, jumbling, bandaging).
+Context for an agent (e.g. Opus 5.5 in Claude Code) asked to recreate a physical twisty puzzle as an interactive 3D web app. It is deliberately short: puzzles vary a lot, so use it as a checklist and adapt. It was written after building the DaYan Tangram Cube Extreme simulator in this repo and extended after the Curvy Copter and Curvy Copter Plus (curved cuts, jumbling, bandaging) and the Maltese Gear Cube (geared mixup, shape-shifting gears).
 
 **The one rule:** get the real geometry from the real puzzle *before* building rendering or UI. Most rework comes from guessing cut positions from low-resolution product photos.
 
@@ -12,7 +12,7 @@ Ask in one batch (most users are happy to help, and many own the puzzle):
 2. **Photos**, the most valuable input:
    - One straight-on, high-resolution photo of a face (perpendicular, whole face in frame, good light). A scrambled puzzle is fine, as long as its outline is still the original shape.
    - The solved puzzle from two opposite corners, to get the colour scheme.
-   - Optionally, a short video of each move type.
+   - Optionally, a short video of each move type. For geared puzzles, ask for one turn held half way, then finished: it shows how the gears move mid-turn.
 3. **Measurements.** Edge length, and the distance from an edge to the nearest cut line (ruler or calipers).
 4. **Scope.**
    - Variants to include.
@@ -23,6 +23,8 @@ Ask in one batch (most users are happy to help, and many own the puzzle):
    - Hosting (GitHub Pages, Vercel, etc.).
 
 Say clearly which facts are still guesses. Ask again the moment the evidence and the model disagree.
+
+Ask for quick physical checks of directions, e.g. "turn the top clockwise: which way does a front middle gear spin?" It takes the user ten seconds and settles what photos can't. On the Maltese Gear Cube the user's own earlier model had the spin backwards.
 
 ## 2. Research (what to find, where)
 
@@ -57,6 +59,8 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
 6. **Jumble angles come from the axes, not the cut shape.** A partial turn unlocks a neighbour only when it carries one axis onto another at the same angle from the turning axis. For the 12 edge axes that is arccos(1/3) = 70.53° and 109.47°. Owners often describe these clicks as "60°" or "120°", so show them the numbers.
 7. **Prototype numerically before building the app.** A Python voxel model of the cut arrangement, with a strict straddle test, reproduced the piece counts and every behaviour the user described: unlock pairs, corner/triangle swaps, which twisted pieces block which edges, and the order of a known commutator. The TS engine's tests then reuse those numbers.
 8. **Fit the free parameters, then test alternatives.** For the cones, fit the tilt, then move the apex off the face centres and confirm the fit gets worse. A wrong family of guesses can still match a few counts.
+9. **When symmetry and photos disagree, look for hidden geometry before doubting the symmetry.** The Maltese Gear Cube's 22.5° gear axes predict hubs at 0.414 of the half-width, but the photos gave 0.47–0.49. The cause: the stickers stop short of bevelled edges and cut-away vertices. Edge-on photos showed the bevel band.
+10. **Trace outlines from several copies on one photo.** Rotate each copy into one frame and average the masks. Then mirror about the shape's symmetry axis, smooth with a Fourier series, and check by overlaying the result on the photo at true scale.
 
 *Lesson from the Tangram build:* the first hypothesis put a corner cut on the face diagonal. It reproduced some counts but was wrong. One straight-on photo from the user fixed it immediately. Ask for that photo in step 1, not after building.
 
@@ -81,9 +85,14 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
     - Find stops exactly: the angles where a moving piece's cut axis lands on another turning axis (atan2 from the vectors), and that edge's cut is clear there but not just before or after.
     - Context-dependent notation (`UF+` = to the next stop) needs the exact angle in the history, so undo stays exact.
   - A move is a region (`n·x > d`) plus a rotation. Apply it to the pieces whose centroid is in the region.
+- **Geared mixups (pieces trading slots through 45° turns):**
+  - Store each piece as (slot, k), meaning k quarter turns about the slot's outward axis.
+  - Pick slot frames so every move maps frames to frames, then build the move tables by matching rotated frames. The state stays exact and finite.
+  - A gear carried 45° lands in the next slot's frame turned 180°, so add the gear spin on top of that.
   - Keep notation parsing, scramble (seeded random moves), undo/redo history and an animation queue as separate, testable modules.
 - **Rendering.**
   - Bodies: take the convex hull of each face polygon inset *within its own plane*. Rolling-ball rounding erodes faces at acute cuts, which makes stickers overhang the plastic.
+  - Non-convex (curved) bodies can't use a hull, and a general Minkowski rounding takes seconds per piece. If each piece is an intersection of smooth regions, every crease is convex: sweep "the corner outside a ball of radius r" along each crease (found by tracing each output triangle back to its input surface), extend it a little past the ends, and subtract it. Use analytic normals (cone, sphere, and the swept fillet normal), so a coarse mesh still shades smoothly, and pick against the light sharp mesh on a hidden layer. Test that no vertex sits deeper than r(1 − cos φ/2) below its surfaces, and that the ball under every sticker point fits inside the body.
   - Stickers: the face polygon inset by a margin, with rounded corners, lifted slightly off the surface. For curved pieces: slice the exact solid just under the face, then use a 2D offset of −(margin + r) followed by +r with round joins. Subtract any printed details, such as the Plus's dot.
   - Tone mapping: `NeutralToneMapping` keeps sticker colours true.
   - Glossy black plastic seen head-on reads as grey under a wide specular lobe. A lower base `specularIntensity` (about 0.35) plus a little clearcoat keeps it black.
@@ -110,6 +119,8 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
   - Phone width, using an iframe at 390 px.
   - The production build, with no console errors.
 - **Measure visual complaints.** When the user reports a visual flaw, measure it before and after the fix (e.g. ray-cast the plastic rim around every sticker).
+- **Cross-check against the user's own model, if they have one** (e.g. a macro catalogue). Compare quantities that don't depend on conventions, such as how many pieces each macro changes.
+- **Overlaps.** Intersect the exact solids (manifold booleans) at rest in solved and scrambled states. Sweep each move type for mid-turn contacts, and report the worst depth honestly.
 - **Testing gotchas.** Background tabs throttle `requestAnimationFrame`, so animations look stuck in automated tests. Simulate touch with synthetic `PointerEvent`s and trackpad swipes with `WheelEvent`s.
 - **Jumbling tests.** On a bandaging puzzle a hand-written sequence can be legitimately blocked. Take test sequences from verified sources (the user, forum algorithms) or generate them with the engine, and assert the blocked sets exactly.
 
@@ -117,4 +128,4 @@ Say clearly which facts are still guesses. Ask again the moment the evidence and
 
 - **GitHub Pages:** set `base: './'` in `vite.config.ts` and deploy `dist/` with a GitHub Actions workflow (`actions/upload-pages-artifact` + `actions/deploy-pages`). Free accounts need a public repo for Pages.
 - **Before the first commit:** keep personal photos and other large reference files out of the repo (`.gitignore`), and document the research and its sources in `docs/`.
-- **Several puzzles on one site:** give each puzzle a tab that is a plain `?puzzle=` link, and load each app with a dynamic `import()`. A heavy dependency, such as the 208 kB gzipped WebAssembly geometry kernel, is then downloaded only on the tabs that need it.
+- **Several puzzles on one site:** give each puzzle (and each variant worth its own page) a tab that is a plain `?puzzle=` link, and load each app with a dynamic `import()`. A heavy dependency, such as the 208 kB gzipped WebAssembly geometry kernel, is then downloaded only on the tabs that need it.

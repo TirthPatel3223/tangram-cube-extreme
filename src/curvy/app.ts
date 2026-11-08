@@ -110,7 +110,10 @@ export async function start(ctx: AppContext, variantId: CurvyVariantId): Promise
 
   // Build the curved pieces (WebAssembly mesh booleans; a few hundred milliseconds).
   const wasm = await loadManifold(wasmUrl);
-  const geos = model.shapes.map((s) => buildShapeGeometry(wasm, s, defaultCsgOptions()));
+  // `?round=0` builds the old knife-edged pieces (handy for comparing the fillets).
+  const csg = defaultCsgOptions();
+  const opts = ctx.params.get('round') === '0' ? { ...csg, fillet: null } : csg;
+  const geos = model.shapes.map((s) => buildShapeGeometry(wasm, s, opts));
   visuals = buildCurvyVisuals(model, geos);
   stage.root.add(buildCore());
   animator = new CurvyAnimator(stage.root, visuals, CurvyState.solved(model));

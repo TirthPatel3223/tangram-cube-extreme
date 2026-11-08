@@ -1,10 +1,8 @@
 import { type Axis, type Move, formatMove } from '../puzzle/moves';
 import type { VariantDef, VariantId } from '../puzzle/variants';
 import type { ViewName } from '../render/scene';
-import { puzzleTabsHtml } from './puzzleTabs';
 
 export interface PanelHandlers {
-  onVariant(id: VariantId): void;
   /** A move button: notation of a single move such as "U" or "D'". */
   onMoveButton(notation: string): void;
   onHoverPart(axis: Axis | null): void;
@@ -45,15 +43,10 @@ const ICON = {
 };
 
 const TEMPLATE = /* html */ `
-  ${puzzleTabsHtml('tangram')}
   <header class="panel__header">
     <p class="eyebrow eyebrow--brand">${ICON.cube}<span>DaYan · design by Daqing Bao</span></p>
     <h1 class="brand__title" data-ref="title">Tangram Cube Extreme</h1>
     <p class="brand__meta" data-ref="meta"></p>
-    <div class="seg" role="group" aria-label="Puzzle variant">
-      <button type="button" data-variant="extreme">Extreme</button>
-      <button type="button" data-variant="original">Original</button>
-    </div>
   </header>
 
   <section class="card" aria-labelledby="h-turn">
@@ -152,9 +145,6 @@ export function createPanel(host: HTMLElement, h: PanelHandlers): Panel {
   const undoBtn = host.querySelector<HTMLButtonElement>('[data-action="undo"]')!;
   const redoBtn = host.querySelector<HTMLButtonElement>('[data-action="redo"]')!;
 
-  host.querySelectorAll<HTMLButtonElement>('[data-variant]').forEach((b) =>
-    b.addEventListener('click', () => h.onVariant(b.dataset.variant as VariantId)),
-  );
   host.querySelectorAll<HTMLButtonElement>('.mv').forEach((b) => {
     b.addEventListener('click', () => h.onMoveButton(b.dataset.move!));
     b.addEventListener('pointerenter', () => h.onHoverPart(b.dataset.axis as Axis));
@@ -208,9 +198,6 @@ export function createPanel(host: HTMLElement, h: PanelHandlers): Panel {
       meta.textContent = `${v.variant.year} · ${v.variant.edgeMm} mm · ${v.variant.shapesPerFace} shapes per face`;
       step.textContent = v.variant.cornerOrder === 6 ? '60° per step' : '120° per step';
       about.textContent = ABOUT[v.variant.id];
-      host.querySelectorAll<HTMLButtonElement>('[data-variant]').forEach((b) =>
-        b.classList.toggle('is-on', b.dataset.variant === v.variant.id),
-      );
       undoBtn.disabled = !v.canUndo;
       redoBtn.disabled = !v.canRedo;
       scrambleBox.hidden = !v.scramble;
