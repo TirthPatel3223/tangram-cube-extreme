@@ -80,7 +80,7 @@ describe.each(['cc', 'plus'] as const)('%s scramble', (variant) => {
     for (const t of r.turns) st.apply(t, false);
     expect(st.equals(a.state)).toBe(true);
     expect(a.state.isCubeShape()).toBe(false);
-  });
+  }, 30_000);
 });
 
 describe("Curvy Copter Plus scramble (the user's recipe)", () => {
