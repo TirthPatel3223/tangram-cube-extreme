@@ -102,7 +102,7 @@ function template(v: CurvyVariantDef): string {
   </div>
 
   <section class="card card--compact" data-ref="scrambleBox" aria-label="Scramble" hidden>
-    <div class="field-label">Scramble <span class="tag">${v.id === 'plus' ? '180° · combo + triangle split · shape shift' : '180° turns · combo · jumbles'}</span></div>
+    <div class="field-label">Scramble <span class="tag">${v.id === 'plus' ? '180° · combo + triangle split · shape shift · jumbling' : '180° turns · combo · jumbles'}</span></div>
     <code class="scramble__text" data-ref="scrambleText"></code>
   </section>
 

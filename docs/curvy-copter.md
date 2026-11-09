@@ -136,6 +136,7 @@ A turn is checked against the real 3D piece shapes. Each shape carries a few tho
 3. Real jumbling.
    - Curvy Copter: two jumble blocks `A± B A∓`. B is a neighbour unlocked by A's stop and is turned 180°; A returns exactly to where it started. Pieces end up swapped between kinds and the shape changes.
    - Curvy Copter Plus: the user's shape-shifting algorithm `UF- UR+ UF+ UR- UF- UR+ UF+ UR- FR- UF+ FR+ UF- FR- UF+ FR+ UF-`, twice, each time in a random orientation. One run swaps a corner with a small triangle. An orientation that would bring back the cube shape is skipped.
+4. Curvy Copter Plus only (2026-11-09): complete jumbling. 15 random legal moves, each a jumble stop (`+`/`-`) or a 180° turn of any free edge, never the same edge twice in a row. Edges end off their cube positions, and typically 10–28 pieces stick out.
 
 ## Checks to do on the physical puzzle
 

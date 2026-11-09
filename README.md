@@ -34,7 +34,7 @@ See [`docs/tangram-cube.md`](docs/tangram-cube.md).
 - **Controls.**
   - A *180° / Jumble* mode switch, on Jumble when the page opens. In Jumble mode a click turns to the next stop; Shift-click goes anticlockwise.
   - Keys `Q W E R` / `A S D F` / `Z X C V` for the three rows of edges, `J` to toggle Jumble, and `Ctrl+Z` / `Ctrl+Y` to undo and redo.
-- **Scramble.** 180° turns, then shape-preserving algorithms in random orientations mixed with 180° turns, then real jumbling. On the Plus these are the user's corner-swap combo and triangle-splitting algorithm, then their shape-shifting algorithm twice.
+- **Scramble.** 180° turns, then shape-preserving algorithms in random orientations mixed with 180° turns, then real jumbling. On the Plus these are the user's corner-swap combo and triangle-splitting algorithm, then their shape-shifting algorithm twice, then 15 random jumble stops and 180° turns.
 
 See [`docs/curvy-copter.md`](docs/curvy-copter.md) for the research, the photo fit, the bandaging model and the sources.
 

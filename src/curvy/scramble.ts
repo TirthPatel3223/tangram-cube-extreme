@@ -62,16 +62,28 @@ export interface ScrambleOptions {
   readonly jumbles: number;
   /** Phase 3: the shape-shifting algorithm, each time in a random orientation. Plus only. */
   readonly shapeShifts: number;
+  /** Phase 4: free jumbling, random legal jumble stops and 180° turns. Plus only. */
+  readonly freeJumbles: number;
 }
 
 /**
  * Curvy Copter: two final jumble blocks, enough to swap corners and triangles and change the shape,
  * while leaving some edges free (each proud corner bandages the two edges across its face).
  */
-export const DEFAULT_SCRAMBLE: ScrambleOptions = { halfTurns: 20, comboRounds: 6, splitRounds: 0, jumbles: 2, shapeShifts: 0 };
+export const DEFAULT_SCRAMBLE: ScrambleOptions = { halfTurns: 20, comboRounds: 6, splitRounds: 0, jumbles: 2, shapeShifts: 0, freeJumbles: 0 };
 
-/** Curvy Copter Plus, the user's recipe: 6 combos + 6 triangle splits, then the shape shift twice. */
-export const PLUS_SCRAMBLE: ScrambleOptions = { halfTurns: 20, comboRounds: 6, splitRounds: 6, jumbles: 0, shapeShifts: 2 };
+/**
+ * Curvy Copter Plus, the user's recipe: 6 combos + 6 triangle splits, then the shape shift twice,
+ * then 15 free jumbling moves.
+ */
+export const PLUS_SCRAMBLE: ScrambleOptions = {
+  halfTurns: 20,
+  comboRounds: 6,
+  splitRounds: 6,
+  jumbles: 0,
+  shapeShifts: 2,
+  freeJumbles: 15,
+};
 
 export function defaultScramble(model: CurvyModel): ScrambleOptions {
   return model.variant.id === 'plus' ? PLUS_SCRAMBLE : DEFAULT_SCRAMBLE;
@@ -93,6 +105,8 @@ export interface Scramble {
  *      Copter it is jumble blocks: A± (to a stop), B 180° (a neighbour that A's stop unlocked), then A
  *      straight back. Pieces end up swapped between kinds (corners proud of faces, triangles sunk in
  *      corner holes), which also bandages some turns, as on the real puzzle.
+ *   4. on the Plus, complete jumbling: random legal moves, each a jumble stop (+ or -) or a 180° turn of
+ *      any edge that is free, so edges end up off their cube positions and the shape goes wild.
  * Every move is checked against the geometry, so the result is always reachable on the real puzzle.
  */
 export function generateCurvyScramble(model: CurvyModel, rng: () => number, opts = defaultScramble(model)): Scramble {
@@ -188,5 +202,27 @@ export function generateCurvyScramble(model: CurvyModel, rng: () => number, opts
       }
     }
   }
+  // 4. Complete jumbling: random legal jumble stops and 180° turns (never the same edge twice running).
+  let prev: EdgeName | null = null;
+  const free: Notated[] = [];
+  for (let k = 0; k < opts.freeJumbles; k++) {
+    const options = shuffle(
+      EDGES.filter((e) => e !== prev).flatMap((edge): Notated[] => [
+        { edge, kind: 'stop', dir: 1 },
+        { edge, kind: 'stop', dir: -1 },
+        { edge, kind: 'half', dir: 1 },
+      ]),
+    );
+    const move = options.find((n) => resolveTurn(state, n).ok);
+    if (!move) break; // everything is bandaged
+    const r = resolveTurn(state, move);
+    if (!r.ok) break;
+    state = state.clone();
+    state.apply(r.turn, false);
+    turns.push(r.turn);
+    free.push(r.turn);
+    prev = move.edge;
+  }
+  if (free.length) groups.push(formatTurns(free));
   return { turns, text: groups.filter(Boolean).join(' '), state };
 }

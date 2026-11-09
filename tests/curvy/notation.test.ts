@@ -60,7 +60,7 @@ describe.each(['cc', 'plus'] as const)('%s scramble', (variant) => {
 
   it('the first two phases (180° turns + the combo) always end as a flush, fully turnable cube', () => {
     for (let seed = 1; seed <= 6; seed++) {
-      const s = generateCurvyScramble(model, mulberry32(seed), { ...defaultScramble(model), jumbles: 0, shapeShifts: 0 });
+      const s = generateCurvyScramble(model, mulberry32(seed), { ...defaultScramble(model), jumbles: 0, shapeShifts: 0, freeJumbles: 0 });
       expect(s.state.isCubeShape(), `seed ${seed}`).toBe(true);
       expect(s.state.protruding(), `seed ${seed}`).toEqual([]);
       expect(s.text).toMatch(/\(/); // contains combo groups
@@ -108,15 +108,30 @@ describe("Curvy Copter Plus scramble (the user's recipe)", () => {
     expect(st.isCubeShape()).toBe(false);
   });
 
-  it('runs 6 combos and 6 triangle splits, then the shape shift twice, ending shape-shifted', () => {
+  it('runs 6 combos and 6 triangle splits, then the shape shift twice', () => {
     for (let seed = 1; seed <= 4; seed++) {
-      const s = generateCurvyScramble(model, mulberry32(seed));
+      const s = generateCurvyScramble(model, mulberry32(seed), { ...defaultScramble(model), freeJumbles: 0 });
       const g = groups(s.text);
       expect(g.filter((n) => n === COMBO_LEN).length, `seed ${seed}`).toBe(6);
       expect(g.filter((n) => n === TRIANGLE_SPLIT.length).length, `seed ${seed}`).toBe(6);
       // The two shape shifts come last.
       expect(g.slice(-2), `seed ${seed}`).toEqual([SHAPE_SHIFT.length, SHAPE_SHIFT.length]);
       expect(s.state.isCubeShape(), `seed ${seed}`).toBe(false);
+    }
+  }, 120000);
+
+  it('ends with 15 free jumbling moves (stops and 180° turns) after the last shape shift', () => {
+    for (let seed = 1; seed <= 4; seed++) {
+      const s = generateCurvyScramble(model, mulberry32(seed));
+      const tail = s.text.slice(s.text.lastIndexOf(')') + 1).trim().split(' ');
+      expect(tail.length, `seed ${seed}`).toBe(15);
+      expect(tail.some((m) => /[+-]$/.test(m)), `seed ${seed}`).toBe(true);
+      expect(s.state.isCubeShape(), `seed ${seed}`).toBe(false);
+      // The text replays exactly.
+      const p = parseTurns(s.text);
+      if (!p.ok) throw new Error(p.error);
+      const r = resolveAlgorithm(CurvyState.solved(model), p.turns);
+      expect(r.ok, `seed ${seed}`).toBe(true);
     }
   }, 120000);
 });
