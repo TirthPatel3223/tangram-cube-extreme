@@ -3,7 +3,7 @@ import { distance } from '../../puzzle/vec';
 import type { Stage } from '../../render/scene';
 import { FACES, FACE_NORMAL, type Face } from '../geometry';
 import type { MalteseState } from '../state';
-import type { MalteseVisual } from './meshes';
+import { type MalteseVisual, PICK_LAYER } from './meshes';
 
 export interface MaltesePickHandlers {
   onHover(face: Face | null, clientX: number, clientY: number): void;
@@ -30,6 +30,8 @@ export class MaltesePicker {
     private readonly handlers: MaltesePickHandlers,
   ) {
     this.targets = visuals.map((v) => v.group);
+    // Only the light, sharp-edged pick meshes (the rounded bodies are far heavier to raycast).
+    this.raycaster.layers.set(PICK_LAYER);
     const el = stage.renderer.domElement;
     el.addEventListener('pointermove', this.onMove);
     el.addEventListener('pointerleave', () => this.clearHover());

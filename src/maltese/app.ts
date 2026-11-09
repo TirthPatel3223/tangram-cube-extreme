@@ -12,7 +12,7 @@ import { MalteseAnimator } from './render/animator';
 import { FaceLabels } from './render/labels';
 import { type MalteseVisual, buildCoreMesh, buildMalteseVisuals, setHighlight } from './render/meshes';
 import { MaltesePicker } from './render/picking';
-import { buildMalteseGeometry } from './render/pieces';
+import { buildMalteseGeometry, defaultFillet } from './render/pieces';
 import { generateScramble } from './scramble';
 import { MalteseState } from './state';
 import { bindMalteseKeyboard } from './ui/keyboard';
@@ -85,9 +85,10 @@ export async function start(ctx: AppContext): Promise<void> {
     requestAnimationFrame(loop);
   });
 
-  // Build the pieces (WebAssembly mesh booleans; a fraction of a second).
+  // Build the pieces (WebAssembly mesh booleans plus rolling-ball rounding; about a second).
+  // `?round=0` shows the sharp-edged bodies instead.
   const wasm = await loadManifoldKernel(wasmUrl);
-  const geo = buildMalteseGeometry(wasm);
+  const geo = buildMalteseGeometry(wasm, ctx.params.get('round') === '0' ? null : defaultFillet());
   visuals = buildMalteseVisuals(geo);
   for (const v of visuals) stage.root.add(v.group);
   stage.root.add(buildCoreMesh(geo));

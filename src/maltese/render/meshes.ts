@@ -2,7 +2,15 @@ import * as THREE from 'three';
 import type { Mat3 } from '../../puzzle/vec';
 import { COLORS, LOOK } from '../config';
 import { PIECES, type PieceKind } from '../model';
+import type { MeshData } from '../../render/fillet';
 import type { BodyMesh, MalteseGeometry, StickerMesh } from './pieces';
+
+/**
+ * Layer of the invisible picking meshes. The camera renders only layer 0, and the picker's raycaster
+ * tests only this layer, so clicks hit the light sharp-edged bodies, not the rounded ones.
+ */
+export const PICK_LAYER = 1;
+const PICK_MATERIAL = new THREE.MeshBasicMaterial();
 
 export interface MalteseVisual {
   readonly pieceId: number;
@@ -17,6 +25,14 @@ function bodyGeometry(m: BodyMesh): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
   g.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3));
+  g.setIndex(new THREE.BufferAttribute(m.indices, 1));
+  g.computeBoundingSphere();
+  return g;
+}
+
+function plainGeometry(m: MeshData): THREE.BufferGeometry {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
   g.setIndex(new THREE.BufferAttribute(m.indices, 1));
   g.computeBoundingSphere();
   return g;
@@ -51,12 +67,12 @@ function plasticMaterial(): THREE.MeshPhysicalMaterial {
  * rotated copies), with per-piece materials so pieces can be highlighted on their own.
  */
 export function buildMalteseVisuals(geo: MalteseGeometry): MalteseVisual[] {
-  const shared = {
-    corner: { body: bodyGeometry(geo.corner.body), stickers: geo.corner.stickers.map(stickerGeometry) },
-    centre: { body: bodyGeometry(geo.centre.body), stickers: geo.centre.stickers.map(stickerGeometry) },
-    edge: { body: bodyGeometry(geo.edge.body), stickers: geo.edge.stickers.map(stickerGeometry) },
-    gear: { body: bodyGeometry(geo.gear.body), stickers: geo.gear.stickers.map(stickerGeometry) },
-  };
+  const one = (p: MalteseGeometry['corner']) => ({
+    body: bodyGeometry(p.body),
+    pick: plainGeometry(p.pick),
+    stickers: p.stickers.map(stickerGeometry),
+  });
+  const shared = { corner: one(geo.corner), centre: one(geo.centre), edge: one(geo.edge), gear: one(geo.gear) };
   return PIECES.map((piece) => {
     const g = shared[piece.kind];
     const group = new THREE.Group();
@@ -65,6 +81,10 @@ export function buildMalteseVisuals(geo: MalteseGeometry): MalteseVisual[] {
     const body = new THREE.Mesh(g.body, bodyMaterial);
     body.userData.pieceId = piece.id;
     group.add(body);
+    const pick = new THREE.Mesh(g.pick, PICK_MATERIAL);
+    pick.layers.set(PICK_LAYER);
+    pick.userData.pieceId = piece.id;
+    group.add(pick);
     const meshes: THREE.Mesh[] = [body];
     const stickerMaterials: THREE.MeshPhysicalMaterial[] = [];
     g.stickers.forEach((sg, i) => {
@@ -90,7 +110,7 @@ export function buildMalteseVisuals(geo: MalteseGeometry): MalteseVisual[] {
   });
 }
 
-/** The fixed black core (with see-through tunnels along the four body diagonals). */
+/** The fixed black core ball (with see-through tunnels along the four body diagonals). */
 export function buildCoreMesh(geo: MalteseGeometry): THREE.Mesh {
   const mesh = new THREE.Mesh(
     bodyGeometry(geo.core),

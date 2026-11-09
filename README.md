@@ -109,7 +109,7 @@ npm run build      # type-check + production build into dist/
 URL options:
 - `?puzzle=tangram-cube`, `?puzzle=curvy-copter`, `?puzzle=curvy-copter-plus` or `?puzzle=maltese-gear-cube` opens that tab (no parameter: the Tangram Cube Extreme). Older links (`?variant=original`, `?puzzle=tangram`) still work.
 - `?s=0.315` overrides the Tangram cut fraction, for calibration.
-- `?round=0` builds the Curvy pieces with sharp edges, for comparison.
+- `?round=0` builds the Curvy and Maltese pieces with sharp edges, for comparison.
 
 ## Project layout
 
@@ -117,13 +117,14 @@ URL options:
 src/main.ts      bootstrap: theme toggle, then the app for the selected tab (lazily loaded)
 src/apps/        the Tangram app (Extreme and original)
 src/puzzle/      Tangram engine: cut planes, convex cells, rotation group, moves, state; generic undo history
-src/render/      shared stage, gestures and the Tangram's meshes, animator, picking, labels
+src/render/      shared stage, gestures, rolling-ball fillets, and the Tangram's meshes, animator, picking, labels
 src/ui/          puzzle selector, the Tangram panel and keyboard
 src/curvy/       Curvy Copter engine (cones, pieces, legality, jumble stops, notation, scramble),
                  render/ (manifold-3d meshes and fillets, animator, picking, labels) and ui/ (panel, keyboard)
 src/maltese/     Maltese Gear Cube engine (slots and frames, exact move tables, state, notation, scramble),
-                 photo-traced outlines, render/ (manifold-3d piece solids, animator with gear spin, picking,
-                 labels) and ui/ (panel, keyboard)
+                 photo-fitted star sketch and traced gear outline, render/ (manifold-3d cone-shaped piece
+                 solids on a hollow core, rounded edges, animator with gear spin, picking, labels) and ui/
+tools/maltese/   sticker tools (Python): the star fit to a top-down photo, and the gear traced from a drawing
 tests/           Vitest suites (tests/curvy/ and tests/maltese/ for those puzzles)
 docs/            research notes and the reusable puzzle-app playbook
 .github/         GitHub Pages deployment workflow

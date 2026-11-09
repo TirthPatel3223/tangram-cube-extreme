@@ -9,3 +9,7 @@ coverage/
 *.heic
 *.HEIC
 dev-assets/
+# Python tool caches, and the photo-fitting tools' output (rectified photos)
+__pycache__/
+*.pyc
+fit-out/
