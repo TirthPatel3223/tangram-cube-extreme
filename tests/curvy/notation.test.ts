@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { formatTurns, parseTurns, resolveAlgorithm } from '../../src/curvy/notation';
 import { buildModel } from '../../src/curvy/pieces';
-import { DEFAULT_SCRAMBLE, generateCurvyScramble } from '../../src/curvy/scramble';
+import {
+  SHAPE_SHIFT,
+  TRIANGLE_SPLIT,
+  algVariant,
+  defaultScramble,
+  generateCurvyScramble,
+} from '../../src/curvy/scramble';
 import { CurvyState } from '../../src/curvy/state';
 import { mulberry32 } from '../../src/puzzle/moves';
 
@@ -54,7 +60,7 @@ describe.each(['cc', 'plus'] as const)('%s scramble', (variant) => {
 
   it('the first two phases (180° turns + the combo) always end as a flush, fully turnable cube', () => {
     for (let seed = 1; seed <= 6; seed++) {
-      const s = generateCurvyScramble(model, mulberry32(seed), { ...DEFAULT_SCRAMBLE, jumbles: 0 });
+      const s = generateCurvyScramble(model, mulberry32(seed), { ...defaultScramble(model), jumbles: 0, shapeShifts: 0 });
       expect(s.state.isCubeShape(), `seed ${seed}`).toBe(true);
       expect(s.state.protruding(), `seed ${seed}`).toEqual([]);
       expect(s.text).toMatch(/\(/); // contains combo groups
@@ -76,3 +82,43 @@ describe.each(['cc', 'plus'] as const)('%s scramble', (variant) => {
     expect(a.state.isCubeShape()).toBe(false);
   });
 });
+
+describe("Curvy Copter Plus scramble (the user's recipe)", () => {
+  const model = buildModel('plus');
+  const groups = (text: string) => (text.match(/\([^)]*\)/g) ?? []).map((g) => g.slice(1, -1).split(' ').length);
+
+  it('all 48 orientations of the triangle split are legal from solved and return a flush cube', () => {
+    for (let v = 0; v < 48; v++) {
+      const st = CurvyState.solved(model);
+      const r = resolveAlgorithm(st, algVariant(TRIANGLE_SPLIT, v >> 1, (v & 1) === 1));
+      expect(r.ok, `variant ${v}`).toBe(true);
+      if (!r.ok) continue;
+      for (const t of r.turns) st.apply(t, false);
+      expect(st.isCubeShape(), `variant ${v}`).toBe(true);
+      expect(st.isHome(), `variant ${v}`).toBe(false);
+    }
+  }, 60000);
+
+  it('the shape shift is legal from solved and leaves the puzzle out of cube shape', () => {
+    const st = CurvyState.solved(model);
+    const r = resolveAlgorithm(st, SHAPE_SHIFT);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    for (const t of r.turns) st.apply(t, false);
+    expect(st.isCubeShape()).toBe(false);
+  });
+
+  it('runs 6 combos and 6 triangle splits, then the shape shift twice, ending shape-shifted', () => {
+    for (let seed = 1; seed <= 4; seed++) {
+      const s = generateCurvyScramble(model, mulberry32(seed));
+      const g = groups(s.text);
+      expect(g.filter((n) => n === COMBO_LEN).length, `seed ${seed}`).toBe(6);
+      expect(g.filter((n) => n === TRIANGLE_SPLIT.length).length, `seed ${seed}`).toBe(6);
+      // The two shape shifts come last.
+      expect(g.slice(-2), `seed ${seed}`).toEqual([SHAPE_SHIFT.length, SHAPE_SHIFT.length]);
+      expect(s.state.isCubeShape(), `seed ${seed}`).toBe(false);
+    }
+  }, 120000);
+});
+
+const COMBO_LEN = 5;

@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
-/** The Tangram app's camera presets. Other puzzles pass their own presets to `createStage`. */
-export type ViewName = 'prism' | 'cube';
+/** Camera presets, the same three for every puzzle. Each app supplies its own `ViewPreset`s. */
+export type ViewName = 'corner' | 'face' | 'edge';
 
 export interface ViewPreset {
   /** World-from-model rotation, given as rows (model vector p -> (row0·p, row1·p, row2·p)). */
@@ -13,30 +13,30 @@ export interface ViewPreset {
   elevation: number;
 }
 
-const S2 = Math.SQRT2;
-const S3 = Math.sqrt(3);
-const S6 = Math.sqrt(6);
+/**
+ * Tangram model frame: turning corners at ±(1,1,1), flip edges F (1,-1,0), R (0,1,-1), L (-1,0,1);
+ * green +z, orange +x, yellow +y. Green is on top in all three views.
+ */
+const TANGRAM_CORNER_ROWS: ViewPreset['rows'] = [
+  [0, 1, 0], // world +x (front-right in the corner view) = yellow (+y)
+  [0, 0, 1], // up = green (+z)
+  [1, 0, 0], // world +z (front-left in the corner view, front in the face view) = orange (+x)
+];
 
 export const TANGRAM_VIEWS: Readonly<Record<ViewName, ViewPreset>> = {
-  // Corner T straight up (the turning diagonal vertical) and the F flip edge facing the viewer.
-  prism: {
+  // The turning corner T (orange/yellow/green) towards the viewer, like the other puzzles' corner view.
+  corner: { rows: TANGRAM_CORNER_ROWS, azimuth: 45, elevation: 28 },
+  // Orange straight on, green on top.
+  face: { rows: TANGRAM_CORNER_ROWS, azimuth: 0, elevation: 0 },
+  // The L flip edge (green/red) towards the viewer: green on top, red in front.
+  edge: {
     rows: [
-      [1 / S6, 1 / S6, -2 / S6],
-      [1 / S3, 1 / S3, 1 / S3],
-      [1 / S2, -1 / S2, 0],
-    ],
-    azimuth: -12,
-    elevation: 24,
-  },
-  // Classic cube view like the retail photo: green (+z) on top, white (-y) front-left, orange (+x) front-right.
-  cube: {
-    rows: [
-      [1, 0, 0],
-      [0, 0, 1],
       [0, -1, 0],
+      [0, 0, 1],
+      [-1, 0, 0],
     ],
-    azimuth: 45,
-    elevation: 27,
+    azimuth: 0,
+    elevation: 45,
   },
 };
 
@@ -95,7 +95,7 @@ function presetQuaternion(p: ViewPreset): THREE.Quaternion {
 export function createStage(
   container: HTMLElement,
   views: Readonly<Record<string, ViewPreset>> = TANGRAM_VIEWS,
-  initialView = 'prism',
+  initialView = 'corner',
 ): Stage {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));

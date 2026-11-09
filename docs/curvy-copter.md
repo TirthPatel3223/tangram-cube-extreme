@@ -130,8 +130,12 @@ A turn is checked against the real 3D piece shapes. Each shape carries a few tho
 ## Scramble (the user's recipe)
 
 1. 20 random 180° turns.
-2. Six rounds of the user's combo in a random orientation (24 rotations, plain or mirrored), each followed by two or three 180° turns. The cube stays flush.
-3. Two real jumble blocks `A± B A∓`. B is a neighbour unlocked by A's stop and is turned 180°; A returns exactly to where it started. Pieces end up swapped between kinds and the shape changes.
+2. Shape-preserving algorithms, each in a random orientation (24 rotations, plain or mirrored) and each followed by two or three 180° turns. The cube stays flush.
+   - Curvy Copter: six rounds of the user's combo `UL- FR- UF FR+ UL+`.
+   - Curvy Copter Plus (2026-11-09): six combos and six rounds of the user's triangle-splitting algorithm, shuffled together. The algorithm is `UR+ DL+ BR- BR- BR- DF- DF- DF- UR- DL- DR+ DR+ DR+ DL+ UR+ DF+ DF+ DF+ DL- BR+ BR+ BR+ UR-`. It separates the small triangles from the pieces next to them and returns a flush cube. All 48 orientations are legal from any flush state. It needs the split X-pieces: on the original Curvy Copter, move 9 is bandaged.
+3. Real jumbling.
+   - Curvy Copter: two jumble blocks `A± B A∓`. B is a neighbour unlocked by A's stop and is turned 180°; A returns exactly to where it started. Pieces end up swapped between kinds and the shape changes.
+   - Curvy Copter Plus: the user's shape-shifting algorithm `UF- UR+ UF+ UR- UF- UR+ UF+ UR- FR- UF+ FR+ UF- FR- UF+ FR+ UF-`, twice, each time in a random orientation. One run swaps a corner with a small triangle. An orientation that would bring back the cube shape is skipped.
 
 ## Checks to do on the physical puzzle
 

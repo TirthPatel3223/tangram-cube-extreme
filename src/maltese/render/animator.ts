@@ -32,8 +32,8 @@ function spinAngle(amount: number, fraction: number): number {
 /**
  * Plays moves one after another, like the real mechanism: the face layer turns the full angle, the
  * middle ring follows at half the angle, and every gear of that ring also spins about its own axis
- * (+90° per clockwise quarter turn, counterclockwise seen from outside), during the second half of
- * each quarter turn (see gearSpinProgress). At the end of a move the state is updated and every
+ * (+90° per clockwise quarter turn, counterclockwise seen from outside), uniformly from the start to
+ * the end of each quarter turn (see gearSpinProgress). At the end of a move the state is updated and every
  * piece snaps to its exact pose.
  */
 export class MalteseAnimator {

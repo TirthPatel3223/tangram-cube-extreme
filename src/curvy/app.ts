@@ -57,7 +57,7 @@ export async function start(ctx: AppContext, variantId: CurvyVariantId): Promise
 
   const model = buildModel(variantId);
   const history = new MoveHistory<AppliedTurn>(invertTurn);
-  let mode: TurnMode = 'half';
+  let mode: TurnMode = 'jumble';
   let speed = 1;
   let scrambleText: string | null = null;
   let hovered: EdgeName | null = null;

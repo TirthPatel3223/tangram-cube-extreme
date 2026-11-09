@@ -21,7 +21,8 @@
         document.documentElement.dataset.theme = t === 'dark' ? 'dark' : 'light';
       })();
     </script>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Each tab swaps in its own puzzle's icon (src/main.ts); this is the default tab's. -->
+    <link rel="icon" href="/favicons/tangram-cube-extreme.svg" type="image/svg+xml" />
   </head>
   <body>
     <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" title="Toggle light / dark mode">

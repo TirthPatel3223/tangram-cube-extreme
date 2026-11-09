@@ -105,8 +105,9 @@ const TEMPLATE = /* html */ `
   <section class="card" aria-labelledby="h-view">
     <h2 id="h-view" class="eyebrow">View</h2>
     <div class="seg" role="group" aria-label="Camera">
-      <button type="button" data-view="prism">Corner up</button>
-      <button type="button" data-view="cube">Cube</button>
+      <button type="button" data-view="corner">Corner</button>
+      <button type="button" data-view="face">Face-on</button>
+      <button type="button" data-view="edge">Edge</button>
     </div>
     <label class="switch">
       <input type="checkbox" data-ref="labels" checked />
@@ -188,7 +189,7 @@ export function createPanel(host: HTMLElement, h: PanelHandlers): Panel {
       b.classList.toggle('is-on', b.dataset.view === view),
     );
   };
-  setView('prism');
+  setView('corner');
 
   return {
     setView,

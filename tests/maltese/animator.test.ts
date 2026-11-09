@@ -64,28 +64,29 @@ describe('maltese animator + history', () => {
     expectMeshesMatch(visuals, animator.visualState);
   });
 
-  it('half way through U the ring has turned 22.5° and its gears have not spun yet (as in the user’s video)', () => {
+  it('half way through U the ring has turned 22.5° and its gears have spun 45° (uniform spin)', () => {
     const visuals = fakeVisuals();
     const animator = new MalteseAnimator(visuals, MalteseState.solved());
     animator.previewAt({ face: 'U', amount: 1 }, 0.5);
     const solved = MalteseState.solved();
-    // The F-right gear of the E ring: carried 22.5° about +y (clockwise from above), not spun yet.
+    // The F-right gear of the E ring: carried 22.5° about +y (clockwise from above), spun 45°.
     const g = PIECES.find((x) => x.kind === 'gear' && x.name === 'Fr')!;
     const expected = new THREE.Quaternion()
       .setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 8)
-      .multiply(quatOf(solved, g.id));
+      .multiply(quatOf(solved, g.id))
+      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 4));
     expect(visuals[g.id].group.quaternion.angleTo(expected)).toBeLessThan(1e-6);
     // A U-layer corner has turned 45°, a D-layer corner not at all.
     const ufr = PIECES.find((x) => x.name === 'UFR')!;
     const dfr = PIECES.find((x) => x.name === 'DFR')!;
     expect(visuals[ufr.id].group.quaternion.angleTo(quatOf(solved, ufr.id))).toBeCloseTo(Math.PI / 4, 6);
     expect(visuals[dfr.id].group.quaternion.angleTo(quatOf(solved, dfr.id))).toBeLessThan(1e-6);
-    // Three quarters of the way the gear is half way through its spin (45°), like frame 120 of the video.
+    // Three quarters of the way the gear is three quarters through its spin (67.5°).
     animator.previewAt({ face: 'U', amount: 1 }, 0.75);
     const at34 = new THREE.Quaternion()
       .setFromAxisAngle(new THREE.Vector3(0, 1, 0), -(3 * Math.PI) / 16)
       .multiply(quatOf(solved, g.id))
-      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 4));
+      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), (3 * Math.PI) / 8));
     expect(visuals[g.id].group.quaternion.angleTo(at34)).toBeLessThan(1e-6);
     animator.previewAt(null);
     expectMeshesMatch(visuals, solved);

@@ -46,16 +46,12 @@ export const GEAR_SPIN_PER_QUARTER = 1;
 
 /**
  * How far a ring gear has spun (in quarter turns) when the move has progressed `p` quarter turns.
- * The user's video (a U turn held half way, then finished) shows the gears still in their starting
- * orientation at half way and turning through 45° about three quarters of the way: they dwell while
- * leaving a slot and are rolled into the next one by the incoming corner teeth (the puzzle "clicks"
- * at each position). So within each quarter turn the spin runs over its second half, eased.
+ * The spin is uniform: it starts as the face starts to turn and finishes with it, so a gear is always
+ * exactly as far through its 90° as the face is through its quarter turn. (The real puzzle's gears
+ * dwell and then click into place, but the user prefers the smooth version.)
  */
 export function gearSpinProgress(p: number): number {
-  const whole = Math.floor(p);
-  const u = p - whole;
-  const s = Math.min(1, Math.max(0, (u - 0.5) / 0.5));
-  return whole + s * s * (3 - 2 * s);
+  return p;
 }
 
 function roundMat(m: Mat3): Mat3 {

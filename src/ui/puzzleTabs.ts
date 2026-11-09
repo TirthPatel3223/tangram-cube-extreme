@@ -7,8 +7,8 @@ export type PuzzleTabId = 'tangram-cube-extreme' | 'tangram-cube' | 'curvy-copte
 export const PUZZLE_TABS: ReadonlyArray<{ readonly id: PuzzleTabId; readonly label: string }> = [
   { id: 'tangram-cube-extreme', label: 'Tangram Cube Extreme' },
   { id: 'tangram-cube', label: 'Tangram Cube' },
-  { id: 'curvy-copter', label: 'Curvy Copter' },
   { id: 'curvy-copter-plus', label: 'Curvy Copter Plus' },
+  { id: 'curvy-copter', label: 'Curvy Copter' },
   { id: 'maltese-gear-cube', label: 'Maltese Gear Cube' },
 ];
 
@@ -30,6 +30,14 @@ export function puzzleFromUrl(params: URLSearchParams): PuzzleTabId {
   if (tab) return tab.id;
   if ((p === null || p === 'tangram') && params.get('variant') === 'original') return 'tangram-cube';
   return DEFAULT_PUZZLE;
+}
+
+/**
+ * The tab's browser icon: a scrambled face of that puzzle, rendered from its own 3D model by
+ * `tools/favicons/` (public/favicons/<id>.svg). `base` is Vite's BASE_URL ('./' in the build).
+ */
+export function faviconHref(id: PuzzleTabId, base = './'): string {
+  return `${base}favicons/${id}.svg`;
 }
 
 export function puzzleTabsHtml(active: PuzzleTabId): string {

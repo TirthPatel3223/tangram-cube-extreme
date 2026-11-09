@@ -13,3 +13,6 @@ dev-assets/
 __pycache__/
 *.pyc
 fit-out/
+# favicon renderer intermediates (tools/favicons): colour-index renders and previews
+tools/favicons/out/
+tools/favicons/preview/

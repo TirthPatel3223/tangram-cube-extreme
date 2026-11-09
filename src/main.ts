@@ -1,7 +1,7 @@
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
 import type { AppContext } from './apps/context';
-import { puzzleFromUrl, puzzleTabsHtml } from './ui/puzzleTabs';
+import { faviconHref, puzzleFromUrl, puzzleTabsHtml } from './ui/puzzleTabs';
 
 // Light / dark theme: the initial value (light unless the visitor chose dark) is set by the inline
 // script in index.html.
@@ -36,6 +36,8 @@ const ctx: AppContext = {
 // The puzzle selector above the 3D view.
 const puzzle = puzzleFromUrl(params);
 document.getElementById('puzzles')!.innerHTML = puzzleTabsHtml(puzzle);
+// Each puzzle has its own browser-tab icon (a scrambled face of it); index.html links the default tab's.
+document.querySelector<HTMLLinkElement>('link[rel="icon"]')?.setAttribute('href', faviconHref(puzzle, import.meta.env.BASE_URL));
 
 // Each puzzle is its own lazily loaded app, so a tab only downloads what it needs
 // (the curved and geared puzzles bring a WebAssembly geometry kernel the Tangram never loads).

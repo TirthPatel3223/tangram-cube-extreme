@@ -6,8 +6,8 @@ Interactive 3D recreations of real twisty puzzles in the browser (three.js). Pic
 |---|---|---|
 | **Tangram Cube Extreme** | DaYan Tangram Cube Extreme (design by Daqing Bao) | 60° corner turns that shape-shift, edge flips |
 | **Tangram Cube** | The original DaYan Tangram Cube | 120° corner turns and edge flips; always stays a cube |
-| **Curvy Copter** | Meffert's Curvy Copter (design by Tom van der Zanden) | Curved (conical) cuts, 12 edges turning 180°, jumbling |
 | **Curvy Copter Plus** | Meffert's Curvy Copter Plus | Split X-pieces: small "inner corner" triangles swap with corners; real bandaging |
+| **Curvy Copter** | Meffert's Curvy Copter (design by Tom van der Zanden) | Curved (conical) cuts, 12 edges turning 180°, jumbling |
 | **Maltese Gear Cube** | Meffert's Maltese Gear Cube (design by Oskar van Deventer) | 90° face turns gear the middle layer 45°: centres and edges trade places, 24 gears spin and tilt |
 
 **Live site:** https://tirthpatel3223.github.io/tangram-cube-extreme/
@@ -17,6 +17,7 @@ Interactive 3D recreations of real twisty puzzles in the browser (three.js). Pic
 - **Real cut geometry.** Every piece is generated from the puzzle's actual cut planes. The cut depth was measured from a photo of a real puzzle: 11 shapes per face, 44 visible pieces.
 - **Real moves.** The two corner layers turn in 60° steps (120° on the original) and the three edges flip 180°.
 - **Shape-shifting.** A 60° corner turn pushes pieces out of the cube outline, exactly as on the physical puzzle.
+- **Views.** Corner, Face-on and Edge, like the other puzzles. The Corner view faces the turning corner, and the Edge view faces a flip edge.
 
 See [`docs/tangram-cube.md`](docs/tangram-cube.md).
 
@@ -31,9 +32,9 @@ See [`docs/tangram-cube.md`](docs/tangram-cube.md).
   - **Shape-shifting and jumbling.** Corners can end up standing proud in small-triangle slots, triangles sink into corner holes, and petals flip.
   - **Bandaging.** Each turn is swept against the real 3D piece shapes. A turn that would make pieces collide is refused, and the pieces in the way glow red.
 - **Controls.**
-  - A *180° / Jumble* mode switch. In Jumble mode a click turns to the next stop; Shift-click goes anticlockwise.
+  - A *180° / Jumble* mode switch, on Jumble when the page opens. In Jumble mode a click turns to the next stop; Shift-click goes anticlockwise.
   - Keys `Q W E R` / `A S D F` / `Z X C V` for the three rows of edges, `J` to toggle Jumble, and `Ctrl+Z` / `Ctrl+Y` to undo and redo.
-- **Scramble.** 180° turns, then a shape-preserving jumble combo in random orientations, then a couple of real jumbles.
+- **Scramble.** 180° turns, then shape-preserving algorithms in random orientations mixed with 180° turns, then real jumbling. On the Plus these are the user's corner-swap combo and triangle-splitting algorithm, then their shape-shifting algorithm twice.
 
 See [`docs/curvy-copter.md`](docs/curvy-copter.md) for the research, the photo fit, the bandaging model and the sources.
 
@@ -41,7 +42,7 @@ See [`docs/curvy-copter.md`](docs/curvy-copter.md) for the research, the photo f
 
 - **Real gearing.**
   - A 90° face turn drives the middle layer 45°.
-  - That layer's 8 gears each spin a quarter turn, counterclockwise as seen from outside (checked on the real puzzle), during the second half of the turn as in the user's video.
+  - That layer's 8 gears each spin a quarter turn, counterclockwise as seen from outside (checked on the real puzzle), in step with the face, from the start of the turn to the end.
   - A face needs 8 quarter turns to come back.
 - **Mixup and shape-shifting.**
   - Centres and edges share one set of slots.
@@ -68,7 +69,7 @@ See [`docs/maltese-gear-cube.md`](docs/maltese-gear-cube.md).
 
 ## Notation
 
-**Tangram Cube.** Hold the puzzle with one turning corner on top (the *Corner up* view).
+**Tangram Cube.** Hold the puzzle with one turning corner straight up (the corner facing you in the *Corner* view).
 
 | Move | Meaning |
 |---|---|
@@ -125,6 +126,7 @@ src/maltese/     Maltese Gear Cube engine (slots and frames, exact move tables, 
                  photo-fitted star sketch and traced gear outline, render/ (manifold-3d cone-shaped piece
                  solids on a hollow core, rounded edges, animator with gear spin, picking, labels) and ui/
 tools/maltese/   sticker tools (Python): the star fit to a top-down photo, and the gear traced from a drawing
+tools/favicons/  renders each puzzle's scrambled face from its real meshes and traces it into public/favicons/
 tests/           Vitest suites (tests/curvy/ and tests/maltese/ for those puzzles)
 docs/            research notes and the reusable puzzle-app playbook
 .github/         GitHub Pages deployment workflow

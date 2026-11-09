@@ -43,7 +43,7 @@ The cube is `[-1, 1]^3` (1 unit = 30 mm), with x = R, y = U and z = F.
   - leaves the opposite layer fixed;
   - spins each of that ring's 8 gears 90° about its own outward axis.
 - **Spin direction.** The gears spin counterclockwise seen from outside: a gear rolls between the turning layer and the fixed opposite layer, like a differential's spider gear. The user confirmed this on the real puzzle. Their earlier Macro Explorer artifact spun them the other way.
-- **Spin timing.** In the user's video (IMG_3517) a U turn is held half way and then finished. Half way, the moving gear still has its starting orientation. It reaches 45° about three quarters of the way, and 90° at the end. So the app spins ring gears during the second half of each quarter turn (`gearSpinProgress` in `moves.ts`). Retailers mention the gears clicking at each position.
+- **Spin timing.** In the user's video (IMG_3517) a U turn is held half way and then finished. Half way, the moving gear still has its starting orientation. It reaches 45° about three quarters of the way, and 90° at the end. Retailers mention the gears clicking at each position. The app first copied this (spin during the second half of each quarter turn). On 2026-11-09 the user asked for uniform rotation instead: the gears now spin in step with the face, from the start of the turn to the end (`gearSpinProgress` in `moves.ts`).
 - **Consequences** (all tested in `tests/maltese/engine.test.ts`):
   - every face has order 8: its ring must turn 8 × 45°;
   - `X4` turns the ring half way and leaves everything flush;

@@ -27,7 +27,7 @@ export function start({ stageEl, panelEl, tipEl, params }: AppContext, variant: 
   const sParam = Number(params.get('s'));
   const cutS = sParam > 0 && sParam < 1 / 3 ? sParam : CUT_S;
 
-  const stage = createStage(stageEl, TANGRAM_VIEWS, 'prism');
+  const stage = createStage(stageEl, TANGRAM_VIEWS, 'corner');
   const labels = new PartLabels(stage.root);
   const history = new MoveHistory<Move>(invertMove);
 
