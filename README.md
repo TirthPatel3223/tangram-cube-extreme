@@ -42,7 +42,7 @@ See [`docs/curvy-copter.md`](docs/curvy-copter.md) for the research, the photo f
 
 - **Real gearing.**
   - A 90° face turn drives the middle layer 45°.
-  - That layer's 8 gears each spin a quarter turn, counterclockwise as seen from outside (checked on the real puzzle), in step with the face, from the start of the turn to the end.
+  - That layer's 8 gears each spin three quarters of a turn (270°), counterclockwise as seen from outside (checked on the real puzzle), in step with the face, from the start of the turn to the end.
   - A face needs 8 quarter turns to come back.
 - **Mixup and shape-shifting.**
   - Centres and edges share one set of slots.

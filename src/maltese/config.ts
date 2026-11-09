@@ -82,7 +82,10 @@ export const LOOK = {
 };
 
 export const TIMING = {
-  /** Duration of a quarter turn; longer moves take proportionally a little longer. */
-  moveMs: 320,
+  /**
+   * Duration of a quarter turn; longer moves take proportionally a little longer. The user chose 450 ms
+   * (it was 320) so the gears' 270° spin is easy to follow.
+   */
+  moveMs: 450,
   fastMoveMs: 80,
 };

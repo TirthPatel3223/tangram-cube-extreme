@@ -6,9 +6,10 @@ import { CUBE_GROUP } from './model';
  * Exact move tables. A clockwise quarter turn of face X (seen from outside X):
  *  - turns X's face layer −90° about X's outward normal (17 pieces);
  *  - drives the middle ring perpendicular to it −45° (16 pieces: 4 centre/edge slots each way, 8 gears);
- *  - spins each of that ring's 8 gears +90° about its own outward axis, i.e. counterclockwise seen from
- *    outside (it rolls between the turning layer and the fixed opposite one, like a differential's
- *    spider gears; confirmed on the real puzzle);
+ *  - spins each of that ring's 8 gears +270° about its own outward axis, i.e. three quarter turns
+ *    counterclockwise seen from outside (it rolls between the turning layer and the fixed opposite one,
+ *    like a differential's spider gears; the user measured 270° on the real puzzle), so it comes to
+ *    rest where a 90° clockwise spin would leave it;
  *  - leaves the opposite face layer where it is.
  *
  * Every slot frame lands on a slot frame up to a quarter turn about the slot's axis, so a move maps
@@ -42,12 +43,13 @@ export const QUARTER = -Math.PI / 2;
 /** The ring follows at half the angle. */
 export const RING_RATIO = 0.5;
 /** Ring gears spin this many quarter turns (about their outward axis) per clockwise face quarter turn. */
-export const GEAR_SPIN_PER_QUARTER = 1;
+export const GEAR_SPIN_PER_QUARTER = 3;
 
 /**
- * How far a ring gear has spun (in quarter turns) when the move has progressed `p` quarter turns.
+ * How far through its spin a ring gear is (in face quarter turns; multiply by GEAR_SPIN_PER_QUARTER
+ * for gear quarter turns) when the move has progressed `p` quarter turns.
  * The spin is uniform: it starts as the face starts to turn and finishes with it, so a gear is always
- * exactly as far through its 90° as the face is through its quarter turn. (The real puzzle's gears
+ * exactly as far through its 270° as the face is through its quarter turn. (The real puzzle's gears
  * dwell and then click into place, but the user prefers the smooth version.)
  */
 export function gearSpinProgress(p: number): number {

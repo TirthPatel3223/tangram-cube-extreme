@@ -139,15 +139,15 @@ describe('shape-shifting', () => {
     expect(pieceAt(st, 'radial', 'FL').name).toBe('F'); // the F centre sits in the FL edge slot
   });
 
-  it('after U the front middle gears have their upper half proud (they spin counterclockwise)', () => {
+  it('after U the front middle gears have their lower half proud (they spin 270° counterclockwise)', () => {
     const st = after('U');
     const g = pieceAt(st, 'gear', 'Fl'); // the gear that started right of the F centre
     expect(g.name).toBe('Fr');
-    expect(st.ori[g.id]).toBe(3);
+    expect(st.ori[g.id]).toBe(1);
     // Cap normal of the prototype: tilted 22.5° from its axis towards the face centre (local +y).
     const cap: Vec3 = [0, Math.sin(GEAR_TILT), Math.cos(GEAR_TILT)];
     const n = mat3Vec(st.matrix(g.id), cap);
-    expect(n[1]).toBeLessThan(-0.3); // faces slightly down, so its upper half stands out of the face
+    expect(n[1]).toBeGreaterThan(0.3); // faces slightly up, so its lower half stands out of the face
   });
 
   it('gear tilts from a flush cap: k = 1 or 3 → 31.4°, k = 2 → 45°', () => {

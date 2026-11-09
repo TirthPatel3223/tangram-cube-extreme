@@ -41,16 +41,16 @@ The cube is `[-1, 1]^3` (1 unit = 30 mm), with x = R, y = U and z = F.
   - turns X's layer −90° about X's outward normal;
   - drives the ring perpendicular to it −45°;
   - leaves the opposite layer fixed;
-  - spins each of that ring's 8 gears 90° about its own outward axis.
-- **Spin direction.** The gears spin counterclockwise seen from outside: a gear rolls between the turning layer and the fixed opposite layer, like a differential's spider gear. The user confirmed this on the real puzzle. Their earlier Macro Explorer artifact spun them the other way.
-- **Spin timing.** In the user's video (IMG_3517) a U turn is held half way and then finished. Half way, the moving gear still has its starting orientation. It reaches 45° about three quarters of the way, and 90° at the end. Retailers mention the gears clicking at each position. The app first copied this (spin during the second half of each quarter turn). On 2026-11-09 the user asked for uniform rotation instead: the gears now spin in step with the face, from the start of the turn to the end (`gearSpinProgress` in `moves.ts`).
+  - spins each of that ring's 8 gears 270° about its own outward axis.
+- **Spin direction and amount.** The gears spin counterclockwise seen from outside: a gear rolls between the turning layer and the fixed opposite layer, like a differential's spider gear. The user confirmed the direction on the real puzzle. Their earlier Macro Explorer artifact spun them the other way. On 2026-11-09 the user measured the amount: 270° per quarter turn, not 90° as the app first had it (`GEAR_SPIN_PER_QUARTER = 3` in `moves.ts`). A gear therefore comes to rest where a 90° clockwise spin would leave it; the user checked that after `U` the front middle gears have their lower half proud.
+- **Spin timing.** In the user's video (IMG_3517) a U turn is held half way and then finished. It was first read as: half way, the moving gear still has its starting orientation; it reaches 45° about three quarters of the way, and 90° at the end. (That reading predates the 270° measurement above and gave the wrong amount and resting pose.) Retailers mention the gears clicking at each position. The app first copied this (spin during the second half of each quarter turn). On 2026-11-09 the user asked for uniform rotation instead: the gears now spin in step with the face, from the start of the turn to the end (`gearSpinProgress` in `moves.ts`).
 - **Consequences** (all tested in `tests/maltese/engine.test.ts`):
   - every face has order 8: its ring must turn 8 × 45°;
   - `X4` turns the ring half way and leaves everything flush;
   - `X2` and `X2'` are different moves;
   - `U D = D U`: the E ring ends where it started, with its gears turned 180°;
   - `U D'` is the whole-cube rotation y;
-  - after `U`, every E-ring gear has its upper half proud;
+  - after `U`, every E-ring gear has its lower half proud;
   - `U R` turns the FR edge 90° in the UF slot, as in the user's photo.
 
 ### Exact bookkeeping
@@ -62,7 +62,7 @@ Every centre, edge and gear has a pose (slot, k): it sits in its slot turned k·
   - Centre slots: x is the first coordinate axis perpendicular to the slot.
   - Gear slots: y points towards the gear's face centre.
 - **Why poses stay exact.** Every move takes slot frames to slot frames, up to quarter turns. So the move tables (`moves.ts`) are built once by matching rotated frames, and nothing drifts.
-- **Carried gears flip.** Carrying a gear 45° maps its frame onto the next slot's frame turned 180°. With the spin, a clockwise move therefore takes a ring gear's k to k − 1.
+- **Carried gears flip.** Carrying a gear 45° maps its frame onto the next slot's frame turned 180°. With the 270° spin (3 quarter turns), a clockwise move therefore takes a ring gear's k to k + 1.
 - **Corners** use the 24 cube rotations.
 
 ### Cross-check against the user's Macro Explorer

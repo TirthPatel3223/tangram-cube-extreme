@@ -67,7 +67,7 @@ function template(): string {
 
   <section class="card" aria-labelledby="h-turn">
     <h2 id="h-turn" class="eyebrow">Turn</h2>
-    <p class="mode-note">A 90° face turn drives the middle layer 45°, and that layer's 8 gears each spin a quarter turn.
+    <p class="mode-note">A 90° face turn drives the middle layer 45°, and that layer's 8 gears each spin three quarters of a turn.
       Centres and edges trade places, so edges stand proud, centres sink and gears tilt.</p>
     <div class="face-grid">${row(false)}${row(true)}</div>
     <p class="status" data-ref="status" role="status"></p>
