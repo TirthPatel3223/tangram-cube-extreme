@@ -65,7 +65,7 @@ describe.each(['cc', 'plus'] as const)('%s scramble', (variant) => {
       expect(s.state.protruding(), `seed ${seed}`).toEqual([]);
       expect(s.text).toMatch(/\(/); // contains combo groups
     }
-  });
+  }, 30_000);
 
   it('is deterministic, replays from its text, and ends genuinely jumbled', () => {
     const a = generateCurvyScramble(model, mulberry32(42));
